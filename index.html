@@ -135,8 +135,9 @@
     }
 
     .field.wide { grid-column: span 12; }
-    .field.third { grid-column: span 4; }
-    .field.half { grid-column: span 6; }
+    .field.company { grid-column: span 3; }
+    .field.obra { grid-column: span 6; }
+    .field.meta { grid-column: span 3; }
 
     label {
       font-size: 13px;
@@ -283,13 +284,6 @@
       color: var(--muted);
     }
 
-    .meta-bar {
-      margin-top: 14px;
-      display: flex;
-      justify-content: flex-start;
-      align-items: center;
-    }
-
     .meta-box {
       display: inline-flex;
       gap: 14px;
@@ -300,6 +294,7 @@
       color: #6b7280;
       font-size: 12px;
       border: 1px solid #e1e4e7;
+      width: 100%;
     }
 
     .meta-box strong {
@@ -315,7 +310,7 @@
         width: 132px;
         height: 88px;
       }
-      .field, .field.third, .field.half {
+      .field, .field.company, .field.obra, .field.meta {
         grid-column: span 12;
       }
       .col-qty { width: 88px; }
@@ -358,9 +353,6 @@
         max-width: 100%;
         text-align: left;
       }
-      .meta-bar {
-        justify-content: flex-start;
-      }
     }
   </style>
 </head>
@@ -389,7 +381,7 @@ O SOLICITANTE É RESPONSÁVEL PELAS INFORMAÇÕES FORNECIDAS.</p>
         <div class="section">
           <h2>Identificação da solicitação</h2>
           <div class="grid">
-            <div class="field third">
+            <div class="field company">
               <label for="empresa">Empresa solicitante</label>
               <select id="empresa" required>
                 <option value="">Selecione</option>
@@ -400,16 +392,17 @@ O SOLICITANTE É RESPONSÁVEL PELAS INFORMAÇÕES FORNECIDAS.</p>
               </select>
             </div>
 
-            <div class="field half">
+            <div class="field obra">
               <label for="obra">Destino / Obra</label>
               <input id="obra" type="text" maxlength="120" placeholder="Ex.: Obra Centro - Bloco A" required />
             </div>
-          </div>
 
-          <div class="meta-bar">
-            <div class="meta-box">
-              <span><strong>Data:</strong> <span id="dataTexto">--/--/----</span></span>
-              <span><strong>Hora:</strong> <span id="horaTexto">--:--</span></span>
+            <div class="field meta">
+              <label>Data / Hora</label>
+              <div class="meta-box">
+                <span><strong>Data:</strong> <span id="dataTexto">--/--/----</span></span>
+                <span><strong>Hora:</strong> <span id="horaTexto">--:--</span></span>
+              </div>
             </div>
           </div>
         </div>
@@ -562,7 +555,7 @@ O SOLICITANTE É RESPONSÁVEL PELAS INFORMAÇÕES FORNECIDAS.</p>
       });
 
       unit.addEventListener('change', () => {
-        // nada aqui para evitar criação precoce
+        // sem ação para evitar criação precoce
       });
 
       desc.addEventListener('blur', maybeAddNext);
