@@ -14,7 +14,6 @@
       --line: #cfd8d3;
       --accent: #2f6f4e;
       --accent-2: #4c9a6a;
-      --accent-soft: #e7f4ec;
       --danger: #b91c1c;
       --shadow: 0 10px 26px rgba(30, 41, 59, 0.08);
       --radius: 18px;
@@ -138,8 +137,6 @@
     .field.wide { grid-column: span 12; }
     .field.third { grid-column: span 4; }
     .field.half { grid-column: span 6; }
-    .field.small { grid-column: span 2; }
-    .field.medium { grid-column: span 4; }
 
     label {
       font-size: 13px;
@@ -161,12 +158,6 @@
     input:focus, select:focus, textarea:focus {
       border-color: var(--accent-2);
       box-shadow: 0 0 0 3px rgba(76, 154, 106, 0.12);
-    }
-
-    input[readonly] {
-      background: #f4f5f6;
-      color: #6b7280;
-      cursor: not-allowed;
     }
 
     textarea {
@@ -315,8 +306,6 @@
       color: #5b6470;
     }
 
-    .hidden { display: none; }
-
     @media (max-width: 900px) {
       .header {
         flex-direction: column;
@@ -326,7 +315,7 @@
         width: 132px;
         height: 88px;
       }
-      .field, .field.third, .field.half, .field.small, .field.medium {
+      .field, .field.third, .field.half {
         grid-column: span 12;
       }
       .col-qty { width: 88px; }
@@ -380,7 +369,7 @@
     <div class="card">
       <div class="header">
         <div class="logo-box" aria-label="Logo da empresa">
-          <img id="logoPreview" src="135927287_448584936583178_5622652680214904709_n.jpg" alt="Logo da empresa" onerror="this.style.display='none'; document.getElementById('logoPlaceholder').style.display='block';" />
+          <img id="logoPreview" src="./135927287_448584936583178_5622652680214904709_n.jpg" alt="Logo da empresa" onerror="this.style.display='none'; document.getElementById('logoPlaceholder').style.display='block';" />
           <div id="logoPlaceholder" class="logo-placeholder" style="display:none;">
             LOGO DA<br />
             EMPRESA
@@ -415,16 +404,6 @@ O SOLICITANTE É RESPONSÁVEL PELAS INFORMAÇÕES FORNECIDAS.</p>
               <label for="obra">Destino / Obra</label>
               <input id="obra" type="text" maxlength="120" placeholder="Ex.: Obra Centro - Bloco A" required />
             </div>
-
-            <div class="field small hidden">
-              <label for="dataSolicitacao">Data</label>
-              <input id="dataSolicitacao" type="date" readonly />
-            </div>
-
-            <div class="field small hidden">
-              <label for="horaSolicitacao">Hora</label>
-              <input id="horaSolicitacao" type="time" readonly />
-            </div>
           </div>
 
           <div class="meta-bar">
@@ -439,7 +418,7 @@ O SOLICITANTE É RESPONSÁVEL PELAS INFORMAÇÕES FORNECIDAS.</p>
           <div class="section-header">
             <div>
               <h2 style="margin-bottom:4px;">Itens solicitados</h2>
-              <div class="hint">Cada nova linha é criada automaticamente ao preencher o item anterior. Você também pode adicionar manualmente pelo botão abaixo.</div>
+              <div class="hint">Cada nova linha é criada automaticamente quando o item atual estiver completo e a descrição perder o foco. Você também pode adicionar manualmente pelo botão abaixo.</div>
             </div>
             <button type="button" class="btn btn-primary" id="addItemBtn">+ Adicionar item</button>
           </div>
@@ -518,8 +497,6 @@ O SOLICITANTE É RESPONSÁVEL PELAS INFORMAÇÕES FORNECIDAS.</p>
     const clearBtn = document.getElementById('clearBtn');
     const submitBtn = document.getElementById('submitBtn');
     const itemsSummary = document.getElementById('itemsSummary');
-    const dataInput = document.getElementById('dataSolicitacao');
-    const horaInput = document.getElementById('horaSolicitacao');
     const dataTexto = document.getElementById('dataTexto');
     const horaTexto = document.getElementById('horaTexto');
 
@@ -539,8 +516,6 @@ O SOLICITANTE É RESPONSÁVEL PELAS INFORMAÇÕES FORNECIDAS.</p>
 
     function setDateTimeNow() {
       const now = new Date();
-      dataInput.value = now.toISOString().slice(0, 10);
-      horaInput.value = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
       dataTexto.textContent = formatDateBR(now);
       horaTexto.textContent = formatTimeBR(now);
     }
@@ -558,9 +533,9 @@ O SOLICITANTE É RESPONSÁVEL PELAS INFORMAÇÕES FORNECIDAS.</p>
       };
     }
 
-    function rowHasAnyValue(row) {
+    function rowIsComplete(row) {
       const { quantidade, unidade, descricao } = getRowData(row);
-      return Boolean(quantidade || unidade || descricao);
+      return Boolean(quantidade && unidade && descricao);
     }
 
     function createRow(focus = false) {
@@ -574,19 +549,23 @@ O SOLICITANTE É RESPONSÁVEL PELAS INFORMAÇÕES FORNECIDAS.</p>
       function maybeAddNext() {
         const rows = Array.from(itemsBody.querySelectorAll('.item-row'));
         const isLastRow = rows[rows.length - 1] === row;
-        const hasValue = rowHasAnyValue(row);
-        const readyToExtend = qty.value.trim() !== '' && unit.value.trim() !== '' && desc.value.trim() !== '';
 
-        if (isLastRow && hasValue && readyToExtend) {
-          const newRow = createRow(true);
-          itemsBody.appendChild(newRow);
+        if (isLastRow && rowIsComplete(row)) {
+          const nextRow = createRow(false);
+          itemsBody.appendChild(nextRow);
           updateSummary();
         }
       }
 
-      qty.addEventListener('input', maybeAddNext);
-      unit.addEventListener('change', maybeAddNext);
-      desc.addEventListener('input', maybeAddNext);
+      qty.addEventListener('input', () => {
+        if (qty.value.length > 4) qty.value = qty.value.slice(0, 4);
+      });
+
+      unit.addEventListener('change', () => {
+        // nada aqui para evitar criação precoce
+      });
+
+      desc.addEventListener('blur', maybeAddNext);
 
       removeBtn.addEventListener('click', () => {
         const rows = itemsBody.querySelectorAll('.item-row');
@@ -633,8 +612,8 @@ O SOLICITANTE É RESPONSÁVEL PELAS INFORMAÇÕES FORNECIDAS.</p>
       return {
         empresa,
         obra,
-        data: dataInput.value,
-        hora: horaInput.value,
+        data: dataTexto.textContent,
+        hora: horaTexto.textContent,
         observacoes,
         itens,
       };
