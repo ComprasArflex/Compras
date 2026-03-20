@@ -6,30 +6,32 @@
   <title>Requisição de Materiais para Obra</title>
   <style>
     :root {
-      --bg: #f4f6f8;
+      --bg: #edf7f0;
       --card: #ffffff;
       --text: #1f2937;
       --muted: #6b7280;
-      --line: #d1d5db;
-      --accent: #1f4e79;
-      --accent-2: #0f766e;
+      --muted-bg: #f3f4f6;
+      --line: #cfd8d3;
+      --accent: #2f6f4e;
+      --accent-2: #4c9a6a;
+      --accent-soft: #e7f4ec;
       --danger: #b91c1c;
-      --shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+      --shadow: 0 10px 26px rgba(30, 41, 59, 0.08);
       --radius: 18px;
     }
 
     * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
     body {
-      margin: 0;
-      background: var(--bg);
+      background: linear-gradient(180deg, #eef8f1 0%, var(--bg) 100%);
       color: var(--text);
       font-family: Arial, Helvetica, sans-serif;
     }
 
     .container {
-      max-width: 1200px;
-      margin: 24px auto;
-      padding: 0 16px 32px;
+      max-width: 1180px;
+      margin: 20px auto;
+      padding: 0 14px 28px;
     }
 
     .card {
@@ -37,86 +39,71 @@
       border-radius: var(--radius);
       box-shadow: var(--shadow);
       overflow: hidden;
+      border: 1px solid rgba(76, 154, 106, 0.12);
     }
 
     .header {
       display: flex;
-      align-items: center;
       gap: 18px;
-      padding: 22px 24px;
+      align-items: flex-start;
+      padding: 20px 22px;
       border-bottom: 1px solid var(--line);
-      background: linear-gradient(135deg, #ffffff 0%, #eef4fb 100%);
+      background: linear-gradient(135deg, #f7fcf8 0%, #e9f6ef 100%);
     }
 
     .logo-box {
-      width: 100px;
-      min-width: 100px;
-      height: 100px;
-      border: 1px dashed #9ca3af;
+      width: 122px;
+      min-width: 122px;
+      height: 92px;
       border-radius: 16px;
+      background: #fff;
+      border: 1px solid var(--line);
       display: flex;
       align-items: center;
       justify-content: center;
       overflow: hidden;
-      background: #fff;
+      box-shadow: inset 0 0 0 1px rgba(76, 154, 106, 0.04);
     }
 
     .logo-box img {
       width: 100%;
       height: 100%;
       object-fit: contain;
-      display: none;
+      display: block;
     }
 
     .logo-placeholder {
       font-size: 12px;
       color: var(--muted);
       text-align: center;
-      padding: 8px;
-      line-height: 1.3;
+      line-height: 1.25;
+      padding: 10px;
+    }
+
+    .header-title {
+      flex: 1;
+      min-width: 0;
     }
 
     .header-title h1 {
-      margin: 0 0 8px;
+      margin: 0 0 10px;
       font-size: 24px;
+      line-height: 1.15;
       color: var(--accent);
       letter-spacing: 0.3px;
     }
 
     .header-title p {
       margin: 0;
-      color: var(--muted);
-      line-height: 1.5;
       white-space: pre-line;
-      font-size: 14px;
-    }
-
-    .top-actions {
-      margin-left: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      align-items: flex-end;
-    }
-
-    .file-label {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 14px;
-      border-radius: 999px;
-      background: #eef2ff;
-      color: #3730a3;
-      cursor: pointer;
       font-size: 13px;
-      border: 1px solid #c7d2fe;
-      user-select: none;
+      line-height: 1.5;
+      color: #2f3a35;
+      font-weight: 700;
     }
-
-    .file-label input { display: none; }
 
     .content {
-      padding: 24px;
+      padding: 20px 22px 22px;
       display: grid;
       gap: 18px;
     }
@@ -145,16 +132,19 @@
       display: flex;
       flex-direction: column;
       gap: 6px;
+      min-width: 0;
     }
 
     .field.wide { grid-column: span 12; }
     .field.third { grid-column: span 4; }
-    .field.quarter { grid-column: span 3; }
+    .field.half { grid-column: span 6; }
+    .field.small { grid-column: span 2; }
+    .field.medium { grid-column: span 4; }
 
     label {
       font-size: 13px;
       font-weight: 700;
-      color: #374151;
+      color: #34423a;
     }
 
     input, select, textarea {
@@ -165,29 +155,35 @@
       font-size: 14px;
       color: var(--text);
       background: #fff;
+      outline: none;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--accent-2);
+      box-shadow: 0 0 0 3px rgba(76, 154, 106, 0.12);
     }
 
     input[readonly] {
-      background: #f9fafb;
-      color: #374151;
+      background: #f4f5f6;
+      color: #6b7280;
       cursor: not-allowed;
     }
 
     textarea {
-      min-height: 88px;
+      min-height: 92px;
       resize: vertical;
     }
 
     .hint {
       font-size: 12px;
       color: var(--muted);
-      line-height: 1.4;
+      line-height: 1.45;
     }
 
-    .items-toolbar {
+    .section-header {
       display: flex;
       justify-content: space-between;
-      align-items: center;
+      align-items: flex-start;
       gap: 12px;
       margin-bottom: 12px;
       flex-wrap: wrap;
@@ -200,39 +196,35 @@
       font-weight: 700;
       cursor: pointer;
       font-size: 14px;
+      transition: transform 0.06s ease, box-shadow 0.06s ease, opacity 0.06s ease;
     }
 
+    .btn:hover { transform: translateY(-1px); }
     .btn-primary {
       background: var(--accent-2);
-      color: white;
+      color: #fff;
+      box-shadow: 0 6px 14px rgba(76, 154, 106, 0.18);
     }
-
     .btn-secondary {
-      background: #e5e7eb;
-      color: #111827;
-    }
-
-    .btn-danger {
-      background: #fee2e2;
-      color: var(--danger);
+      background: #e5ebe7;
+      color: #243128;
     }
 
     .table-wrap {
-      overflow-x: auto;
       border: 1px solid var(--line);
       border-radius: 16px;
+      overflow: hidden;
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 920px;
       table-layout: fixed;
     }
 
     thead th {
-      background: #f8fafc;
-      color: #374151;
+      background: #f3faf5;
+      color: #355043;
       font-size: 13px;
       text-align: left;
       padding: 12px;
@@ -241,7 +233,7 @@
     }
 
     tbody td {
-      border-bottom: 1px solid #e5e7eb;
+      border-bottom: 1px solid #e4ebe6;
       padding: 10px 12px;
       vertical-align: top;
       background: #fff;
@@ -249,61 +241,11 @@
 
     tbody tr:last-child td { border-bottom: none; }
 
-    .col-qty { width: 120px; }
+    .col-qty { width: 108px; }
     .col-unit { width: 150px; }
     .col-desc { width: auto; }
-    .col-action { width: 110px; }
+    .col-action { width: 108px; }
 
-    @media (max-width: 768px) {
-      .table-wrap {
-        overflow: visible;
-      }
-
-      table {
-        min-width: 0;
-      }
-
-      thead {
-        display: none;
-      }
-
-      tbody,
-      tr,
-      td {
-        display: block;
-        width: 100%;
-      }
-
-      tbody tr {
-        margin-bottom: 14px;
-        border: 1px solid var(--line);
-        border-radius: 16px;
-        overflow: hidden;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
-      }
-
-      tbody td {
-        border-bottom: 1px solid #e5e7eb;
-        padding: 12px;
-      }
-
-      tbody td:last-child {
-        border-bottom: none;
-      }
-
-      tbody td::before {
-        content: attr(data-label);
-        display: block;
-        font-size: 12px;
-        font-weight: 700;
-        color: #374151;
-        margin-bottom: 6px;
-      }
-
-      .row-action-btn {
-        margin-top: 2px;
-      }
-    }
     .item-input, .item-select, .item-textarea {
       width: 100%;
       border: 1px solid var(--line);
@@ -311,18 +253,25 @@
       padding: 10px 10px;
       font-size: 14px;
       font-family: inherit;
+      background: #fff;
+    }
+
+    .item-input {
+      max-width: 92px;
+      text-align: right;
     }
 
     .item-textarea {
-      min-height: 70px;
+      min-height: 76px;
       resize: vertical;
+      width: 100%;
     }
 
     .row-action-btn {
       width: 100%;
       padding: 10px 12px;
       border-radius: 10px;
-      border: 1px solid #fecaca;
+      border: 1px solid #f4c7c7;
       background: #fff5f5;
       color: var(--danger);
       font-weight: 700;
@@ -334,6 +283,7 @@
       justify-content: flex-end;
       gap: 10px;
       flex-wrap: wrap;
+      margin-top: 4px;
     }
 
     .summary {
@@ -342,12 +292,86 @@
       color: var(--muted);
     }
 
+    .meta-bar {
+      margin-top: 14px;
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+    }
+
+    .meta-box {
+      display: inline-flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      padding: 9px 12px;
+      border-radius: 12px;
+      background: #f4f5f6;
+      color: #6b7280;
+      font-size: 12px;
+      border: 1px solid #e1e4e7;
+    }
+
+    .meta-box strong {
+      color: #5b6470;
+    }
+
     .hidden { display: none; }
 
     @media (max-width: 900px) {
-      .header { flex-direction: column; align-items: flex-start; }
-      .top-actions { margin-left: 0; align-items: flex-start; }
-      .field, .field.third, .field.quarter { grid-column: span 12; }
+      .header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .logo-box {
+        width: 132px;
+        height: 88px;
+      }
+      .field, .field.third, .field.half, .field.small, .field.medium {
+        grid-column: span 12;
+      }
+      .col-qty { width: 88px; }
+      .col-unit { width: 118px; }
+      .col-action { width: 94px; }
+    }
+
+    @media (max-width: 768px) {
+      .content { padding: 16px; }
+      .section { padding: 16px; }
+      .table-wrap {
+        overflow: visible;
+      }
+      table {
+        min-width: 0;
+      }
+      thead { display: none; }
+      tbody, tr, td { display: block; width: 100%; }
+      tbody tr {
+        margin-bottom: 14px;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+      }
+      tbody td {
+        border-bottom: 1px solid #e4ebe6;
+        padding: 12px;
+      }
+      tbody td:last-child { border-bottom: none; }
+      tbody td::before {
+        content: attr(data-label);
+        display: block;
+        font-size: 12px;
+        font-weight: 700;
+        color: #355043;
+        margin-bottom: 6px;
+      }
+      .item-input {
+        max-width: 100%;
+        text-align: left;
+      }
+      .meta-bar {
+        justify-content: flex-start;
+      }
     }
   </style>
 </head>
@@ -356,9 +380,9 @@
     <div class="card">
       <div class="header">
         <div class="logo-box" aria-label="Logo da empresa">
-          <img id="logoPreview" alt="Logo da empresa" />
-          <div id="logoPlaceholder" class="logo-placeholder">
-            LOGO DA
+          <img id="logoPreview" src="135927287_448584936583178_5622652680214904709_n.jpg" alt="Logo da empresa" onerror="this.style.display='none'; document.getElementById('logoPlaceholder').style.display='block';" />
+          <div id="logoPlaceholder" class="logo-placeholder" style="display:none;">
+            LOGO DA<br />
             EMPRESA
           </div>
         </div>
@@ -369,13 +393,6 @@
 INFORME MEDIDAS, QUANTIDADES E TODOS OS DETALHES NECESSÁRIOS.
 SOLICITAÇÕES INCOMPLETAS OU INCORRETAS PODERÃO CAUSAR ATRASOS NA COMPRA.
 O SOLICITANTE É RESPONSÁVEL PELAS INFORMAÇÕES FORNECIDAS.</p>
-        </div>
-
-        <div class="top-actions">
-          <label class="file-label">
-            Carregar logo
-            <input type="file" id="logoInput" accept="image/*" />
-          </label>
         </div>
       </div>
 
@@ -394,26 +411,32 @@ O SOLICITANTE É RESPONSÁVEL PELAS INFORMAÇÕES FORNECIDAS.</p>
               </select>
             </div>
 
-            <div class="field third">
+            <div class="field half">
               <label for="obra">Destino / Obra</label>
               <input id="obra" type="text" maxlength="120" placeholder="Ex.: Obra Centro - Bloco A" required />
             </div>
 
-            <div class="field quarter">
+            <div class="field small hidden">
               <label for="dataSolicitacao">Data</label>
               <input id="dataSolicitacao" type="date" readonly />
             </div>
 
-            <div class="field quarter">
+            <div class="field small hidden">
               <label for="horaSolicitacao">Hora</label>
               <input id="horaSolicitacao" type="time" readonly />
             </div>
           </div>
-          <div class="hint" style="margin-top:10px;">A data e a hora são preenchidas automaticamente no momento em que o formulário é aberto.</div>
+
+          <div class="meta-bar">
+            <div class="meta-box">
+              <span><strong>Data:</strong> <span id="dataTexto">--/--/----</span></span>
+              <span><strong>Hora:</strong> <span id="horaTexto">--:--</span></span>
+            </div>
+          </div>
         </div>
 
         <div class="section">
-          <div class="items-toolbar">
+          <div class="section-header">
             <div>
               <h2 style="margin-bottom:4px;">Itens solicitados</h2>
               <div class="hint">Cada nova linha é criada automaticamente ao preencher o item anterior. Você também pode adicionar manualmente pelo botão abaixo.</div>
@@ -459,7 +482,7 @@ O SOLICITANTE É RESPONSÁVEL PELAS INFORMAÇÕES FORNECIDAS.</p>
   <template id="itemRowTemplate">
     <tr class="item-row">
       <td data-label="Quantidade">
-        <input class="item-input qty-input" type="number" min="0" step="any" placeholder="0" />
+        <input class="item-input qty-input" type="number" min="0" max="9999" step="1" placeholder="0" inputmode="numeric" />
       </td>
       <td data-label="Unidade de medida">
         <select class="item-select unit-input">
@@ -495,23 +518,31 @@ O SOLICITANTE É RESPONSÁVEL PELAS INFORMAÇÕES FORNECIDAS.</p>
     const clearBtn = document.getElementById('clearBtn');
     const submitBtn = document.getElementById('submitBtn');
     const itemsSummary = document.getElementById('itemsSummary');
-    const logoInput = document.getElementById('logoInput');
-    const logoPreview = document.getElementById('logoPreview');
-    const logoPlaceholder = document.getElementById('logoPlaceholder');
-
     const dataInput = document.getElementById('dataSolicitacao');
     const horaInput = document.getElementById('horaSolicitacao');
+    const dataTexto = document.getElementById('dataTexto');
+    const horaTexto = document.getElementById('horaTexto');
+
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzHUBuxnE-E0Inepu23v0bTtiwlhf3iJGBjS3-1MA28zWszoGbAFWsPtu0aon72iMpI/exec';
 
     function pad(n) {
       return String(n).padStart(2, '0');
     }
 
+    function formatDateBR(date) {
+      return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()}`;
+    }
+
+    function formatTimeBR(date) {
+      return `${pad(date.getHours())}:${pad(date.getMinutes())}`;
+    }
+
     function setDateTimeNow() {
       const now = new Date();
-      const date = now.toISOString().slice(0, 10);
-      const time = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
-      dataInput.value = date;
-      horaInput.value = time;
+      dataInput.value = now.toISOString().slice(0, 10);
+      horaInput.value = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+      dataTexto.textContent = formatDateBR(now);
+      horaTexto.textContent = formatTimeBR(now);
     }
 
     function updateSummary() {
@@ -589,17 +620,15 @@ O SOLICITANTE É RESPONSÁVEL PELAS INFORMAÇÕES FORNECIDAS.</p>
       itemsBody.innerHTML = '';
       addInitialRow();
       setDateTimeNow();
-      logoPreview.src = '';
-      logoPreview.style.display = 'none';
-      logoPlaceholder.style.display = 'block';
-      logoInput.value = '';
     }
 
     function collectData() {
       const empresa = document.getElementById('empresa').value.trim();
       const obra = document.getElementById('obra').value.trim();
       const observacoes = document.getElementById('observacoes').value.trim();
-      const itens = Array.from(itemsBody.querySelectorAll('.item-row')).map(getRowData).filter(item => item.quantidade || item.unidade || item.descricao);
+      const itens = Array.from(itemsBody.querySelectorAll('.item-row'))
+        .map(getRowData)
+        .filter(item => item.quantidade || item.unidade || item.descricao);
 
       return {
         empresa,
@@ -624,18 +653,6 @@ O SOLICITANTE É RESPONSÁVEL PELAS INFORMAÇÕES FORNECIDAS.</p>
       return null;
     }
 
-    logoInput.addEventListener('change', () => {
-      const file = logoInput.files && logoInput.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = e => {
-        logoPreview.src = e.target.result;
-        logoPreview.style.display = 'block';
-        logoPlaceholder.style.display = 'none';
-      };
-      reader.readAsDataURL(file);
-    });
-
     addItemBtn.addEventListener('click', () => {
       itemsBody.appendChild(createRow(true));
       updateSummary();
@@ -650,9 +667,6 @@ O SOLICITANTE É RESPONSÁVEL PELAS INFORMAÇÕES FORNECIDAS.</p>
         alert(error);
         return;
       }
-
-      // Envio para Google Apps Script (Web App)
-      const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzHUBuxnE-E0Inepu23v0bTtiwlhf3iJGBjS3-1MA28zWszoGbAFWsPtu0aon72iMpI/exec';
 
       fetch(SCRIPT_URL, {
         method: 'POST',
