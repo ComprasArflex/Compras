@@ -10,7 +10,6 @@
       --card: #ffffff;
       --text: #1f2937;
       --muted: #6b7280;
-      --muted-bg: #f3f4f6;
       --line: #cfd8d3;
       --accent: #2f6f4e;
       --accent-2: #4c9a6a;
@@ -392,14 +391,24 @@ O SOLICITANTE É RESPONSÁVEL PELAS INFORMAÇÕES FORNECIDAS.</p>
               </select>
             </div>
 
+            <div class="field company">
+              <label for="solicitante">Solicitante</label>
+              <select id="solicitante" required>
+                <option value="">Selecione</option>
+                <option>João</option>
+                <option>Carlos</option>
+                <option>Pedro</option>
+                <option>Marcos</option>
+              </select>
+            </div>
+
             <div class="field obra">
               <label for="obra">Destino / Obra</label>
               <input id="obra" type="text" maxlength="120" placeholder="Ex.: Obra Centro - Bloco A" required />
             </div>
 
             <div class="field meta">
-              <label>Data / Hora</label>
-              <div class="meta-box">
+             <div class="meta-box">
                 <span><strong>Data:</strong> <span id="dataTexto">--/--/----</span></span>
                 <span><strong>Hora:</strong> <span id="horaTexto">--:--</span></span>
               </div>
@@ -587,6 +596,7 @@ O SOLICITANTE É RESPONSÁVEL PELAS INFORMAÇÕES FORNECIDAS.</p>
 
     function clearAll() {
       document.getElementById('empresa').value = '';
+      document.getElementById('solicitante').value = '';
       document.getElementById('obra').value = '';
       document.getElementById('observacoes').value = '';
       itemsBody.innerHTML = '';
@@ -596,6 +606,7 @@ O SOLICITANTE É RESPONSÁVEL PELAS INFORMAÇÕES FORNECIDAS.</p>
 
     function collectData() {
       const empresa = document.getElementById('empresa').value.trim();
+      const solicitante = document.getElementById('solicitante').value.trim();
       const obra = document.getElementById('obra').value.trim();
       const observacoes = document.getElementById('observacoes').value.trim();
       const itens = Array.from(itemsBody.querySelectorAll('.item-row'))
@@ -604,6 +615,7 @@ O SOLICITANTE É RESPONSÁVEL PELAS INFORMAÇÕES FORNECIDAS.</p>
 
       return {
         empresa,
+        solicitante,
         obra,
         data: dataTexto.textContent,
         hora: horaTexto.textContent,
@@ -614,6 +626,7 @@ O SOLICITANTE É RESPONSÁVEL PELAS INFORMAÇÕES FORNECIDAS.</p>
 
     function validateData(data) {
       if (!data.empresa) return 'Selecione a empresa solicitante.';
+      if (!data.solicitante) return 'Selecione o solicitante.';
       if (!data.obra) return 'Informe o destino / obra.';
       if (data.itens.length === 0) return 'Adicione pelo menos um item.';
       for (let i = 0; i < data.itens.length; i++) {
