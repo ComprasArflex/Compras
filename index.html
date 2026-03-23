@@ -569,8 +569,22 @@ SOLICITAÇÕES INCOMPLETAS OU INCORRETAS PODERÃO CAUSAR ATRASOS NA COMPRA. O SO
         // sem ação para evitar criação precoce
       });
 
-      desc.addEventListener('blur', maybeAddNext);
+      desc.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
 
+    const rows = Array.from(itemsBody.querySelectorAll('.item-row'));
+    const isLastRow = rows[rows.length - 1] === row;
+
+    if (isLastRow && rowIsComplete(row)) {
+      const nextRow = createRow(true);
+      itemsBody.appendChild(nextRow);
+      updateSummary();
+      return;
+    }
+  }
+});
+      
       removeBtn.addEventListener('click', () => {
         const rows = itemsBody.querySelectorAll('.item-row');
         if (rows.length === 1) {
