@@ -18,15 +18,19 @@
       --radius: 18px;
     }
 
-    * { box-sizing: border-box; }
-    html, body { margin: 0; padding: 0; }
+    * {
+      box-sizing: border-box;
+      font-family: Calibri, Arial, Helvetica, sans-serif;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+    }
+
     body {
       background: linear-gradient(180deg, #eef8f1 0%, var(--bg) 100%);
       color: var(--text);
-      font-family: Calibri, Arial, sans-serif;
-    }
-    input, select, textarea, button {
-      font-family: Calibri, Arial, sans-serif;
     }
 
     .container {
@@ -156,6 +160,7 @@
       color: var(--text);
       background: #fff;
       outline: none;
+      font-family: inherit;
     }
 
     input:focus, select:focus, textarea:focus {
@@ -194,11 +199,13 @@
     }
 
     .btn:hover { transform: translateY(-1px); }
+
     .btn-primary {
       background: var(--accent-2);
       color: #fff;
       box-shadow: 0 6px 14px rgba(76, 154, 106, 0.18);
     }
+
     .btn-secondary {
       background: #e5ebe7;
       color: #243128;
@@ -238,16 +245,17 @@
     .col-qty { width: 108px; }
     .col-unit { width: 150px; }
     .col-desc { width: auto; }
+    .col-file { width: 220px; }
     .col-action { width: 108px; }
 
-    .item-input, .item-select, .item-textarea {
+    .item-input, .item-select, .item-textarea, .item-file {
       width: 100%;
       border: 1px solid var(--line);
       border-radius: 10px;
       padding: 10px 10px;
       font-size: 14px;
-      font-family: inherit;
       background: #fff;
+      font-family: inherit;
     }
 
     .item-input {
@@ -259,6 +267,10 @@
       min-height: 76px;
       resize: vertical;
       width: 100%;
+    }
+
+    .item-file {
+      padding: 8px;
     }
 
     .row-action-btn {
@@ -303,6 +315,27 @@
       color: #5b6470;
     }
 
+    .status-box {
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 13px;
+      display: none;
+    }
+
+    .status-box.success {
+      display: block;
+      background: #edf8f1;
+      color: #1c6b41;
+      border: 1px solid #b7e1c5;
+    }
+
+    .status-box.error {
+      display: block;
+      background: #fff4f4;
+      color: #9d1c1c;
+      border: 1px solid #f1c0c0;
+    }
+
     @media (max-width: 900px) {
       .header {
         flex-direction: column;
@@ -317,18 +350,15 @@
       }
       .col-qty { width: 88px; }
       .col-unit { width: 118px; }
+      .col-file { width: 180px; }
       .col-action { width: 94px; }
     }
 
     @media (max-width: 768px) {
       .content { padding: 16px; }
       .section { padding: 16px; }
-      .table-wrap {
-        overflow: visible;
-      }
-      table {
-        min-width: 0;
-      }
+      .table-wrap { overflow: visible; }
+      table { min-width: 0; }
       thead { display: none; }
       tbody, tr, td { display: block; width: 100%; }
       tbody tr {
@@ -422,7 +452,7 @@ SOLICITAÇÕES INCOMPLETAS OU INCORRETAS PODERÃO CAUSAR ATRASOS NA COMPRA. O SO
           <div class="section-header">
             <div>
               <h2 style="margin-bottom:4px;">Itens solicitados</h2>
-              <div class="hint">Cada nova linha é criada automaticamente quando o item atual estiver completo e a descrição perder o foco. Você também pode adicionar manualmente pelo botão abaixo.</div>
+              <div class="hint">Cada nova linha é criada automaticamente quando o item atual estiver completo e a descrição perder o foco ou quando você pressionar Enter. Você também pode adicionar manualmente pelo botão abaixo.</div>
             </div>
             <button type="button" class="btn btn-primary" id="addItemBtn">+ Adicionar item</button>
           </div>
@@ -434,6 +464,7 @@ SOLICITAÇÕES INCOMPLETAS OU INCORRETAS PODERÃO CAUSAR ATRASOS NA COMPRA. O SO
                   <th class="col-qty">Quantidade</th>
                   <th class="col-unit">Unidade de medida</th>
                   <th class="col-desc">Descrição</th>
+                  <th class="col-file">Anexo</th>
                   <th class="col-action">Ação</th>
                 </tr>
               </thead>
@@ -449,10 +480,12 @@ SOLICITAÇÕES INCOMPLETAS OU INCORRETAS PODERÃO CAUSAR ATRASOS NA COMPRA. O SO
           <div class="grid">
             <div class="field wide">
               <label for="observacoes">Observações adicionais</label>
-              <textarea id="observacoes" placeholder="Informe aqui qualquer detalhe adicional relevante. Se necessário descreva o nível de urgência e justifique."></textarea>
+              <textarea id="observacoes" placeholder="Informe aqui qualquer detalhe adicional relevante."></textarea>
             </div>
           </div>
         </div>
+
+        <div id="statusBox" class="status-box"></div>
 
         <div class="footer-actions">
           <button type="button" class="btn btn-secondary" id="clearBtn">Limpar tudo</button>
@@ -488,6 +521,9 @@ SOLICITAÇÕES INCOMPLETAS OU INCORRETAS PODERÃO CAUSAR ATRASOS NA COMPRA. O SO
       <td data-label="Descrição">
         <textarea class="item-textarea desc-input" placeholder="Descreva o material com o máximo de detalhes possível."></textarea>
       </td>
+      <td data-label="Anexo">
+        <input class="item-file file-input" type="file" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt" />
+      </td>
       <td data-label="Ação">
         <button type="button" class="row-action-btn remove-btn">Remover</button>
       </td>
@@ -503,8 +539,20 @@ SOLICITAÇÕES INCOMPLETAS OU INCORRETAS PODERÃO CAUSAR ATRASOS NA COMPRA. O SO
     const itemsSummary = document.getElementById('itemsSummary');
     const dataTexto = document.getElementById('dataTexto');
     const horaTexto = document.getElementById('horaTexto');
+    const statusBox = document.getElementById('statusBox');
 
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzHUBuxnE-E0Inepu23v0bTtiwlhf3iJGBjS3-1MA28zWszoGbAFWsPtu0aon72iMpI/exec';
+    // Ajuste para o endereço onde o FastAPI estiver rodando.
+    const API_URL = 'http://localhost:8000/api/requisicoes';
+
+    function showStatus(message, type) {
+      statusBox.textContent = message;
+      statusBox.className = `status-box ${type}`;
+    }
+
+    function clearStatus() {
+      statusBox.textContent = '';
+      statusBox.className = 'status-box';
+    }
 
     function pad(n) {
       return String(n).padStart(2, '0');
@@ -530,10 +578,14 @@ SOLICITAÇÕES INCOMPLETAS OU INCORRETAS PODERÃO CAUSAR ATRASOS NA COMPRA. O SO
     }
 
     function getRowData(row) {
+      const fileInput = row.querySelector('.file-input');
+      const selectedFile = fileInput && fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
+
       return {
         quantidade: row.querySelector('.qty-input').value.trim(),
         unidade: row.querySelector('.unit-input').value.trim(),
         descricao: row.querySelector('.desc-input').value.trim(),
+        file: selectedFile,
       };
     }
 
@@ -565,32 +617,32 @@ SOLICITAÇÕES INCOMPLETAS OU INCORRETAS PODERÃO CAUSAR ATRASOS NA COMPRA. O SO
         if (qty.value.length > 4) qty.value = qty.value.slice(0, 4);
       });
 
-      unit.addEventListener('change', () => {
-        // sem ação para evitar criação precoce
-      });
+      desc.addEventListener('blur', maybeAddNext);
 
       desc.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault();
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
 
-    const rows = Array.from(itemsBody.querySelectorAll('.item-row'));
-    const isLastRow = rows[rows.length - 1] === row;
+          const rows = Array.from(itemsBody.querySelectorAll('.item-row'));
+          const isLastRow = rows[rows.length - 1] === row;
 
-    if (isLastRow && rowIsComplete(row)) {
-      const nextRow = createRow(true);
-      itemsBody.appendChild(nextRow);
-      updateSummary();
-      return;
-    }
-  }
-});
-      
+          if (isLastRow && rowIsComplete(row)) {
+            const nextRow = createRow(true);
+            itemsBody.appendChild(nextRow);
+            updateSummary();
+            return;
+          }
+        }
+      });
+
       removeBtn.addEventListener('click', () => {
         const rows = itemsBody.querySelectorAll('.item-row');
         if (rows.length === 1) {
           qty.value = '';
           unit.value = '';
           desc.value = '';
+          const fileInput = row.querySelector('.file-input');
+          if (fileInput) fileInput.value = '';
           return;
         }
         row.remove();
@@ -618,6 +670,7 @@ SOLICITAÇÕES INCOMPLETAS OU INCORRETAS PODERÃO CAUSAR ATRASOS NA COMPRA. O SO
       itemsBody.innerHTML = '';
       addInitialRow();
       setDateTimeNow();
+      clearStatus();
     }
 
     function collectData() {
@@ -625,9 +678,10 @@ SOLICITAÇÕES INCOMPLETAS OU INCORRETAS PODERÃO CAUSAR ATRASOS NA COMPRA. O SO
       const solicitante = document.getElementById('solicitante').value.trim();
       const obra = document.getElementById('obra').value.trim();
       const observacoes = document.getElementById('observacoes').value.trim();
+
       const itens = Array.from(itemsBody.querySelectorAll('.item-row'))
         .map(getRowData)
-        .filter(item => item.quantidade || item.unidade || item.descricao);
+        .filter(item => item.quantidade || item.unidade || item.descricao || item.file);
 
       return {
         empresa,
@@ -645,6 +699,7 @@ SOLICITAÇÕES INCOMPLETAS OU INCORRETAS PODERÃO CAUSAR ATRASOS NA COMPRA. O SO
       if (!data.solicitante) return 'Selecione o solicitante.';
       if (!data.obra) return 'Informe o destino / obra.';
       if (data.itens.length === 0) return 'Adicione pelo menos um item.';
+
       for (let i = 0; i < data.itens.length; i++) {
         const item = data.itens[i];
         if (!item.quantidade) return `Informe a quantidade do item ${i + 1}.`;
@@ -661,29 +716,57 @@ SOLICITAÇÕES INCOMPLETAS OU INCORRETAS PODERÃO CAUSAR ATRASOS NA COMPRA. O SO
 
     clearBtn.addEventListener('click', clearAll);
 
-    submitBtn.addEventListener('click', () => {
+    submitBtn.addEventListener('click', async () => {
+      clearStatus();
+
       const data = collectData();
       const error = validateData(data);
       if (error) {
-        alert(error);
+        showStatus(error, 'error');
         return;
       }
 
-      fetch(SCRIPT_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-      })
-      .then(() => {
-        alert('Solicitação enviada com sucesso!');
-        clearAll();
-      })
-      .catch(() => {
-        alert('Erro ao enviar a solicitação. Verifique a conexão.');
+      const formData = new FormData();
+
+      const payload = {
+        empresa: data.empresa,
+        solicitante: data.solicitante,
+        obra: data.obra,
+        data: data.data,
+        hora: data.hora,
+        observacoes: data.observacoes,
+        itens: data.itens.map(item => ({
+          quantidade: item.quantidade,
+          unidade: item.unidade,
+          descricao: item.descricao,
+        })),
+      };
+
+      formData.append('payload', JSON.stringify(payload));
+
+      data.itens.forEach((item, index) => {
+        if (item.file) {
+          formData.append(`anexo_${index}`, item.file);
+        }
       });
+
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          body: formData,
+        });
+
+        const result = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          throw new Error(result.detail || 'Não foi possível salvar a requisição.');
+        }
+
+        showStatus(`Solicitação enviada com sucesso! Nº ${result.requisicao_uid}`, 'success');
+        clearAll();
+      } catch (err) {
+        showStatus(err.message || 'Erro ao enviar a solicitação.', 'error');
+      }
     });
 
     setDateTimeNow();
