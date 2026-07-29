@@ -1,1 +1,0 @@
-/* Placeholder. This file will be populated after the index update. */
