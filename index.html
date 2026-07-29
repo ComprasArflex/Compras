@@ -1,500 +1,130 @@
-<!-- rebuild -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Requisição de Materiais para Obra</title>
   <style>
     :root {
       --bg: #edf7f0;
       --card: #ffffff;
       --text: #1f2937;
-      --muted: #6b7280;
+      --muted: #64748b;
       --line: #cfd8d3;
-      --accent: #2f6f4e;
+      --accent: #236b49;
       --accent-2: #4c9a6a;
       --danger: #b91c1c;
-      --shadow: 0 10px 26px rgba(30, 41, 59, 0.08);
       --radius: 18px;
+      --shadow: 0 10px 28px rgba(30, 41, 59, 0.08);
     }
 
     * { box-sizing: border-box; }
     html, body { margin: 0; padding: 0; }
-
     body {
+      min-height: 100vh;
       background: linear-gradient(180deg, #eef8f1 0%, var(--bg) 100%);
       color: var(--text);
       font-family: Calibri, Arial, sans-serif;
     }
+    button, input, select, textarea { font: inherit; }
 
-    input, select, textarea, button {
-      font-family: Calibri, Arial, sans-serif;
-    }
+    .container { max-width: 1180px; margin: 20px auto; padding: 0 14px 28px; }
+    .card { background: var(--card); border: 1px solid rgba(76,154,106,.15); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+    .header { display: flex; gap: 18px; align-items: center; padding: 20px 22px; border-bottom: 1px solid var(--line); background: linear-gradient(135deg,#f7fcf8,#e9f6ef); }
+    .logo-box { width: 122px; min-width: 122px; height: 92px; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #fff; border: 1px solid var(--line); border-radius: 16px; }
+    .logo-box img { width: 100%; height: 100%; object-fit: contain; }
+    .logo-placeholder { display: none; padding: 10px; color: var(--muted); text-align: center; font-size: 12px; }
+    .header h1 { margin: 0 0 10px; color: var(--accent); font-size: 24px; line-height: 1.15; }
+    .header p { margin: 0; white-space: pre-line; color: #2f3a35; font-size: 13px; line-height: 1.5; font-weight: 700; }
 
-    .container {
-      max-width: 1180px;
-      margin: 20px auto;
-      padding: 0 14px 28px;
-    }
-
-    .card {
-      background: var(--card);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      overflow: hidden;
-      border: 1px solid rgba(76, 154, 106, 0.12);
-    }
-
-    .header {
-      display: flex;
-      gap: 18px;
-      align-items: flex-start;
-      padding: 20px 22px;
-      border-bottom: 1px solid var(--line);
-      background: linear-gradient(135deg, #f7fcf8 0%, #e9f6ef 100%);
-    }
-
-    .logo-box {
-      width: 122px;
-      min-width: 122px;
-      height: 92px;
-      border-radius: 16px;
-      background: #fff;
-      border: 1px solid var(--line);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      box-shadow: inset 0 0 0 1px rgba(76, 154, 106, 0.04);
-    }
-
-    .logo-box img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      display: block;
-    }
-
-    .logo-placeholder {
-      font-size: 12px;
-      color: var(--muted);
-      text-align: center;
-      line-height: 1.25;
-      padding: 10px;
-    }
-
-    .header-title {
-      flex: 1;
-      min-width: 0;
-    }
-
-    .header-title h1 {
-      margin: 0 0 10px;
-      font-size: 24px;
-      line-height: 1.15;
-      color: var(--accent);
-      letter-spacing: 0.3px;
-    }
-
-    .header-title p {
-      margin: 0;
-      white-space: pre-line;
-      font-size: 13px;
-      line-height: 1.5;
-      color: #2f3a35;
-      font-weight: 700;
-    }
-
-    .content {
-      padding: 20px 22px 22px;
-      display: grid;
-      gap: 18px;
-    }
-
-    .section {
-      background: #fff;
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      padding: 18px;
-    }
-
-    .section h2 {
-      margin: 0 0 14px;
-      font-size: 18px;
-      color: var(--accent);
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(12, 1fr);
-      gap: 14px;
-    }
-
-    .field {
-      grid-column: span 6;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      min-width: 0;
-    }
-
-    .field.wide { grid-column: span 12; }
+    .content { display: grid; gap: 18px; padding: 20px 22px 22px; }
+    .section { padding: 18px; background: #fff; border: 1px solid var(--line); border-radius: 16px; }
+    .section h2 { margin: 0 0 14px; color: var(--accent); font-size: 18px; }
+    .grid { display: grid; grid-template-columns: repeat(12,1fr); gap: 14px; }
+    .field { grid-column: span 6; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
     .field.company { grid-column: span 3; }
     .field.obra { grid-column: span 6; }
     .field.meta { grid-column: span 3; }
+    .field.wide { grid-column: span 12; }
+    label { color: #34423a; font-size: 13px; font-weight: 700; }
+    input, select, textarea { width: 100%; padding: 11px 12px; color: var(--text); background: #fff; border: 1px solid var(--line); border-radius: 12px; outline: none; }
+    input:focus, select:focus, textarea:focus { border-color: var(--accent-2); box-shadow: 0 0 0 3px rgba(76,154,106,.12); }
+    textarea { min-height: 88px; resize: vertical; }
+    .meta-box { display: flex; gap: 14px; flex-wrap: wrap; width: 100%; padding: 10px 12px; color: #5b6470; background: #f4f5f6; border: 1px solid #e1e4e7; border-radius: 12px; font-size: 12px; }
+    .hint { color: var(--muted); font-size: 12px; line-height: 1.45; }
 
-    label {
-      font-size: 13px;
-      font-weight: 700;
-      color: #34423a;
-    }
-
-    input, select, textarea {
-      width: 100%;
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      padding: 11px 12px;
-      font-size: 14px;
-      color: var(--text);
-      background: #fff;
-      outline: none;
-    }
-
-    input:focus, select:focus, textarea:focus {
-      border-color: var(--accent-2);
-      box-shadow: 0 0 0 3px rgba(76, 154, 106, 0.12);
-    }
-
-    textarea {
-      min-height: 92px;
-      resize: vertical;
-    }
-
-    .hint {
-      font-size: 12px;
-      color: var(--muted);
-      line-height: 1.45;
-    }
-
-    .section-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 12px;
-      margin-bottom: 12px;
-      flex-wrap: wrap;
-    }
-
-    .btn {
-      border: none;
-      border-radius: 999px;
-      padding: 11px 16px;
-      font-weight: 700;
-      cursor: pointer;
-      font-size: 14px;
-      transition: transform 0.06s ease, box-shadow 0.06s ease, opacity 0.06s ease;
-    }
-
-    .btn:hover { transform: translateY(-1px); }
-
-    .btn-primary {
-      background: var(--accent-2);
-      color: #fff;
-      box-shadow: 0 6px 14px rgba(76, 154, 106, 0.18);
-    }
-
-    .btn-secondary {
-      background: #e5ebe7;
-      color: #243128;
-    }
-
-    .table-wrap {
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      overflow: hidden;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      table-layout: fixed;
-    }
-
-    thead th {
-      background: #f3faf5;
-      color: #355043;
-      font-size: 13px;
-      text-align: left;
-      padding: 12px;
-      border-bottom: 1px solid var(--line);
-      vertical-align: bottom;
-    }
-
-    tbody td {
-      border-bottom: 1px solid #e4ebe6;
-      padding: 10px 12px;
-      vertical-align: top;
-      background: #fff;
-    }
-
-    tbody tr:last-child td { border-bottom: none; }
-
-    .col-qty { width: 108px; }
-    .col-unit { width: 150px; }
-    .col-desc { width: auto; }
-    .col-action { width: 108px; }
-
-    .item-input, .item-select, .item-textarea {
-      width: 100%;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      padding: 10px;
-      font-size: 14px;
-      font-family: inherit;
-      background: #fff;
-    }
-
-    .item-input {
-      max-width: 92px;
-      text-align: right;
-    }
-
-    .item-textarea {
-      min-height: 76px;
-      resize: vertical;
-      width: 100%;
-    }
-
-    .row-action-btn {
-      width: 100%;
-      padding: 10px 12px;
-      border-radius: 10px;
-      border: 1px solid #f4c7c7;
-      background: #fff5f5;
-      color: var(--danger);
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .footer-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-top: 4px;
-    }
-
-    .summary {
-      margin-top: 8px;
-      font-size: 12px;
-      color: var(--muted);
-    }
-
-    .meta-box {
-      display: inline-flex;
-      gap: 14px;
-      flex-wrap: wrap;
-      padding: 9px 12px;
-      border-radius: 12px;
-      background: #f4f5f6;
-      color: #6b7280;
-      font-size: 12px;
-      border: 1px solid #e1e4e7;
-      width: 100%;
-    }
-
-    .meta-box strong { color: #5b6470; }
-
-    .priority-flow {
-      display: grid;
-      gap: 12px;
-    }
-
-    .priority-progress {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--muted);
-    }
-
-    .priority-question {
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      padding: 14px;
-      background: #fbfdfc;
-      transition: opacity 0.15s ease, transform 0.15s ease;
-    }
-
-    .priority-question[hidden] { display: none; }
-
-    .priority-question-title {
-      margin-bottom: 10px;
-      font-size: 14px;
-      line-height: 1.4;
-      font-weight: 700;
-      color: #34423a;
-    }
-
-    .priority-options {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .priority-option {
-      min-width: 94px;
-      padding: 10px 18px;
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      background: #fff;
-      color: #34423a;
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.06s ease;
-    }
-
-    .priority-option:hover {
-      border-color: var(--accent-2);
-      background: #f3faf5;
-      transform: translateY(-1px);
-    }
-
-    .priority-option:disabled {
-      cursor: default;
-      opacity: 0.7;
-    }
-
-    .priority-result {
-      display: none;
-      padding: 14px 16px;
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      font-weight: 700;
-    }
-
+    .priority-flow { display: grid; gap: 12px; }
+    .priority-progress { color: var(--muted); font-size: 12px; font-weight: 700; }
+    .priority-card { padding: 14px; background: #fbfdfc; border: 1px solid var(--line); border-radius: 14px; }
+    .priority-title { margin-bottom: 10px; color: #34423a; font-size: 14px; line-height: 1.4; font-weight: 700; }
+    .priority-options { display: flex; gap: 10px; flex-wrap: wrap; }
+    .priority-option { min-width: 94px; padding: 10px 18px; color: #34423a; background: #fff; border: 1px solid var(--line); border-radius: 999px; font-weight: 700; cursor: pointer; }
+    .priority-option:hover { background: #f3faf5; border-color: var(--accent-2); }
+    .priority-result { display: none; padding: 14px 16px; border: 1px solid var(--line); border-radius: 14px; font-weight: 700; }
     .priority-result.visible { display: block; }
-
-    .priority-result.emergencial {
-      background: #fee2e2;
-      border-color: #fecaca;
-      color: #991b1b;
-    }
-
-    .priority-result.urgente {
-      background: #ffedd5;
-      border-color: #fed7aa;
-      color: #9a3412;
-    }
-
-    .priority-result.necessaria {
-      background: #fef3c7;
-      border-color: #fde68a;
-      color: #92400e;
-    }
-
-    .priority-result.programada {
-      background: #dcfce7;
-      border-color: #bbf7d0;
-      color: #166534;
-    }
-
-    .priority-reset {
-      display: none;
-      width: fit-content;
-      margin-top: 2px;
-      padding: 0;
-      border: none;
-      background: transparent;
-      color: var(--accent);
-      font-size: 13px;
-      font-weight: 700;
-      text-decoration: underline;
-      cursor: pointer;
-    }
-
+    .priority-result.emergencial { color: #991b1b; background: #fee2e2; border-color: #fecaca; }
+    .priority-result.urgente { color: #9a3412; background: #ffedd5; border-color: #fed7aa; }
+    .priority-result.necessaria { color: #92400e; background: #fef3c7; border-color: #fde68a; }
+    .priority-result.programada { color: #166534; background: #dcfce7; border-color: #bbf7d0; }
+    .priority-reset { display: none; width: fit-content; padding: 0; color: var(--accent); background: transparent; border: 0; font-size: 13px; font-weight: 700; text-decoration: underline; cursor: pointer; }
     .priority-reset.visible { display: inline-block; }
 
+    .section-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+    .section-header h2 { margin-bottom: 4px; }
+    .btn { padding: 11px 16px; border: 0; border-radius: 999px; font-weight: 700; cursor: pointer; }
+    .btn-primary { color: #fff; background: var(--accent-2); box-shadow: 0 6px 14px rgba(76,154,106,.18); }
+    .btn-secondary { color: #243128; background: #e5ebe7; }
+    .btn:disabled { opacity: .65; cursor: wait; }
+
+    .table-wrap { overflow: hidden; border: 1px solid var(--line); border-radius: 16px; }
+    table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+    th { padding: 12px; color: #355043; background: #f3faf5; border-bottom: 1px solid var(--line); text-align: left; font-size: 13px; }
+    td { padding: 10px 12px; background: #fff; border-bottom: 1px solid #e4ebe6; vertical-align: top; }
+    tbody tr:last-child td { border-bottom: 0; }
+    .col-qty { width: 108px; }
+    .col-unit { width: 150px; }
+    .col-action { width: 108px; }
+    .item-input, .item-select, .item-textarea { width: 100%; padding: 10px; background: #fff; border: 1px solid var(--line); border-radius: 10px; }
+    .item-input { max-width: 92px; text-align: right; }
+    .item-textarea { min-height: 76px; resize: vertical; }
+    .remove-btn { width: 100%; padding: 10px 12px; color: var(--danger); background: #fff5f5; border: 1px solid #f4c7c7; border-radius: 10px; font-weight: 700; cursor: pointer; }
+    .summary { margin-top: 8px; color: var(--muted); font-size: 12px; }
+    .footer-actions { display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
+
     @media (max-width: 900px) {
-      .header {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
-      .logo-box {
-        width: 132px;
-        height: 88px;
-      }
-
-      .field, .field.company, .field.obra, .field.meta {
-        grid-column: span 12;
-      }
-
-      .col-qty { width: 88px; }
-      .col-unit { width: 118px; }
-      .col-action { width: 94px; }
+      .header { align-items: flex-start; }
+      .field, .field.company, .field.obra, .field.meta { grid-column: span 12; }
     }
-
     @media (max-width: 768px) {
+      .header { flex-direction: column; }
       .content { padding: 16px; }
       .section { padding: 16px; }
-      .table-wrap { overflow: visible; }
-      table { min-width: 0; }
+      .table-wrap { overflow: visible; border: 0; }
+      table, tbody, tr, td { display: block; width: 100%; }
       thead { display: none; }
-      tbody, tr, td { display: block; width: 100%; }
-
-      tbody tr {
-        margin-bottom: 14px;
-        border: 1px solid var(--line);
-        border-radius: 16px;
-        overflow: hidden;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
-      }
-
-      tbody td {
-        border-bottom: 1px solid #e4ebe6;
-        padding: 12px;
-      }
-
-      tbody td:last-child { border-bottom: none; }
-
-      tbody td::before {
-        content: attr(data-label);
-        display: block;
-        font-size: 12px;
-        font-weight: 700;
-        color: #355043;
-        margin-bottom: 6px;
-      }
-
-      .item-input {
-        max-width: 100%;
-        text-align: left;
-      }
+      tbody tr { margin-bottom: 14px; overflow: hidden; border: 1px solid var(--line); border-radius: 16px; }
+      td::before { content: attr(data-label); display: block; margin-bottom: 6px; color: #355043; font-size: 12px; font-weight: 700; }
+      .item-input { max-width: none; text-align: left; }
     }
   </style>
 </head>
 <body>
-  <div class="container">
+  <main class="container">
     <div class="card">
-      <div class="header">
+      <header class="header">
         <div class="logo-box" aria-label="Logo da empresa">
-          <img id="logoPreview" src="./135927287_448584936583178_5622652680214904709_n.jpg" alt="Logo da empresa" onerror="this.style.display='none'; document.getElementById('logoPlaceholder').style.display='block';" />
-          <div id="logoPlaceholder" class="logo-placeholder" style="display:none;">
-            LOGO DA<br />
-            EMPRESA
-          </div>
+          <img id="logoPreview" src="./135927287_448584936583178_5622652680214904709_n.jpg" alt="Logo da empresa">
+          <div id="logoPlaceholder" class="logo-placeholder">LOGO DA<br>EMPRESA</div>
         </div>
-
-        <div class="header-title">
+        <div>
           <h1>REQUISIÇÃO DE MATERIAIS PARA OBRA</h1>
           <p>PREENCHA TODAS AS INFORMAÇÕES DE CADA ITEM DE FORMA COMPLETA E CORRETA. INFORME MEDIDAS, QUANTIDADES E TODOS OS DETALHES NECESSÁRIOS.
 SOLICITAÇÕES INCOMPLETAS OU INCORRETAS PODERÃO CAUSAR ATRASOS NA COMPRA. O SOLICITANTE É RESPONSÁVEL PELAS INFORMAÇÕES FORNECIDAS.</p>
         </div>
-      </div>
+      </header>
 
       <div class="content">
-        <div class="section">
+        <section class="section">
           <h2>Identificação da solicitação</h2>
           <div class="grid">
             <div class="field company">
@@ -507,7 +137,6 @@ SOLICITAÇÕES INCOMPLETAS OU INCORRETAS PODERÃO CAUSAR ATRASOS NA COMPRA. O SO
                 <option>Engenharia do Conforto</option>
               </select>
             </div>
-
             <div class="field company">
               <label for="solicitante">Solicitante</label>
               <select id="solicitante" required>
@@ -518,12 +147,10 @@ SOLICITAÇÕES INCOMPLETAS OU INCORRETAS PODERÃO CAUSAR ATRASOS NA COMPRA. O SO
                 <option>Marcos</option>
               </select>
             </div>
-
             <div class="field obra">
               <label for="obra">Destino / Obra</label>
-              <input id="obra" type="text" maxlength="120" placeholder="Ex.: Obra Centro - Bloco A" required />
+              <input id="obra" type="text" maxlength="120" placeholder="Ex.: Obra Centro - Bloco A" required>
             </div>
-
             <div class="field meta">
               <label>Data / Hora</label>
               <div class="meta-box">
@@ -532,421 +159,284 @@ SOLICITAÇÕES INCOMPLETAS OU INCORRETAS PODERÃO CAUSAR ATRASOS NA COMPRA. O SO
               </div>
             </div>
           </div>
-        </div>
+        </section>
 
-        <div class="section" id="prioritySection">
+        <section class="section">
           <h2>Classificação de prioridade</h2>
-
-          <div class="hint" style="margin-bottom:14px;">
-            Responda às perguntas na ordem apresentada. A classificação será definida automaticamente.
-          </div>
-
+          <div class="hint" style="margin-bottom:14px">Responda às perguntas na ordem apresentada. A classificação será definida automaticamente.</div>
           <div class="priority-flow">
-            <div id="priorityProgress" class="priority-progress">Pergunta 1</div>
-
-            <div class="priority-question" id="priorityQuestionCard">
-              <div class="priority-question-title" id="priorityQuestionText"></div>
-
+            <div id="priorityProgress" class="priority-progress"></div>
+            <div id="priorityCard" class="priority-card">
+              <div id="priorityQuestion" class="priority-title"></div>
               <div class="priority-options">
                 <button type="button" class="priority-option" data-answer="sim">Sim</button>
                 <button type="button" class="priority-option" data-answer="nao">Não</button>
               </div>
             </div>
-
             <div id="priorityResult" class="priority-result" aria-live="polite"></div>
-
-            <button type="button" id="priorityResetBtn" class="priority-reset">
-              Refazer classificação
-            </button>
+            <button type="button" id="priorityReset" class="priority-reset">Refazer classificação</button>
           </div>
-        </div>
+        </section>
 
-        <div class="section">
+        <section class="section">
           <div class="section-header">
             <div>
-              <h2 style="margin-bottom:4px;">Itens solicitados</h2>
-              <div class="hint">Cada nova linha é criada automaticamente quando o item atual estiver completo e a descrição perder o foco. Você também pode adicionar manualmente pelo botão abaixo.</div>
+              <h2>Itens solicitados</h2>
+              <div class="hint">Uma nova linha pode ser adicionada pelo botão ao lado.</div>
             </div>
-            <button type="button" class="btn btn-primary" id="addItemBtn">+ Adicionar item</button>
+            <button type="button" id="addItem" class="btn btn-primary">+ Adicionar item</button>
           </div>
-
           <div class="table-wrap">
             <table>
               <thead>
                 <tr>
                   <th class="col-qty">Quantidade</th>
                   <th class="col-unit">Unidade de medida</th>
-                  <th class="col-desc">Descrição</th>
+                  <th>Descrição</th>
                   <th class="col-action">Ação</th>
                 </tr>
               </thead>
               <tbody id="itemsBody"></tbody>
             </table>
           </div>
+          <div id="itemsSummary" class="summary">0 item adicionado.</div>
+        </section>
 
-          <div class="summary" id="itemsSummary">0 item adicionado.</div>
-        </div>
-
-        <div class="section">
+        <section class="section">
           <h2>Observações gerais</h2>
-          <div class="grid">
-            <div class="field wide">
-              <label for="observacoes">Observações adicionais</label>
-              <textarea id="observacoes" placeholder="Informe aqui qualquer detalhe adicional relevante. Se necessário descreva o nível de urgência e justifique."></textarea>
-            </div>
+          <div class="field wide">
+            <label for="observacoes">Observações adicionais</label>
+            <textarea id="observacoes" placeholder="Informe aqui qualquer detalhe adicional relevante."></textarea>
           </div>
-        </div>
+        </section>
 
         <div class="footer-actions">
-          <button type="button" class="btn btn-secondary" id="clearBtn">Limpar tudo</button>
-          <button type="button" class="btn btn-primary" id="submitBtn">Salvar solicitação</button>
+          <button type="button" id="clearBtn" class="btn btn-secondary">Limpar tudo</button>
+          <button type="button" id="submitBtn" class="btn btn-primary">Salvar solicitação</button>
         </div>
       </div>
     </div>
-  </div>
+  </main>
 
-  <template id="itemRowTemplate">
+  <template id="itemTemplate">
     <tr class="item-row">
-      <td data-label="Quantidade">
-        <input class="item-input qty-input" type="number" min="0" max="9999" step="1" placeholder="0" inputmode="numeric" />
-      </td>
+      <td data-label="Quantidade"><input class="item-input qty-input" type="number" min="1" max="9999" step="1" inputmode="numeric" placeholder="0"></td>
       <td data-label="Unidade de medida">
         <select class="item-select unit-input">
           <option value="">Selecione</option>
-          <option>UN</option>
-          <option>m</option>
-          <option>m²</option>
-          <option>m³</option>
-          <option>kg</option>
-          <option>cx</option>
-          <option>litro</option>
-          <option>galão</option>
-          <option>kit</option>
-          <option>par</option>
-          <option>rolo</option>
-          <option>metro linear</option>
-          <option>outro</option>
+          <option>UN</option><option>m</option><option>m²</option><option>m³</option><option>kg</option><option>cx</option>
+          <option>litro</option><option>galão</option><option>kit</option><option>par</option><option>rolo</option><option>metro linear</option><option>outro</option>
         </select>
       </td>
-      <td data-label="Descrição">
-        <textarea class="item-textarea desc-input" placeholder="Descreva o material com o máximo de detalhes possível."></textarea>
-      </td>
-      <td data-label="Ação">
-        <button type="button" class="row-action-btn remove-btn">Remover</button>
-      </td>
+      <td data-label="Descrição"><textarea class="item-textarea desc-input" placeholder="Descreva o material com o máximo de detalhes possível."></textarea></td>
+      <td data-label="Ação"><button type="button" class="remove-btn">Remover</button></td>
     </tr>
   </template>
 
   <script>
-    const itemsBody = document.getElementById('itemsBody');
-    const itemRowTemplate = document.getElementById('itemRowTemplate');
-    const addItemBtn = document.getElementById('addItemBtn');
-    const clearBtn = document.getElementById('clearBtn');
-    const submitBtn = document.getElementById('submitBtn');
-    const itemsSummary = document.getElementById('itemsSummary');
-    const dataTexto = document.getElementById('dataTexto');
-    const horaTexto = document.getElementById('horaTexto');
-
-    const priorityProgress = document.getElementById('priorityProgress');
-    const priorityQuestionCard = document.getElementById('priorityQuestionCard');
-    const priorityQuestionText = document.getElementById('priorityQuestionText');
-    const priorityResult = document.getElementById('priorityResult');
-    const priorityResetBtn = document.getElementById('priorityResetBtn');
-    const priorityOptionButtons = document.querySelectorAll('.priority-option');
+    'use strict';
 
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyNRYhvGD-SrkJ88d4WRS1pAEat5JPzafhP11SFCfMmGUOdmGARTn4rtRpEMhPjZx6t/exec';
+    const priorityQuestions = [
+      'A atividade já está parada ou parará hoje sem este item?',
+      'Se não for atendida em até 1 dia útil, haverá atraso no cronograma, descumprimento contratual ou retrabalho?',
+      'A necessidade ocorrerá em menos de 5 dias úteis?'
+    ];
 
-    const perguntasPrioridade = {
-      1: '1. A atividade já está parada ou parará hoje sem este item?',
-      2: '2. Se não for atendida em até 1 dia útil, haverá atraso no cronograma, descumprimento contratual ou retrabalho?',
-      3: '3. A necessidade ocorrerá em menos de 5 dias úteis?'
+    const el = {
+      logo: document.getElementById('logoPreview'),
+      logoPlaceholder: document.getElementById('logoPlaceholder'),
+      empresa: document.getElementById('empresa'),
+      solicitante: document.getElementById('solicitante'),
+      obra: document.getElementById('obra'),
+      data: document.getElementById('dataTexto'),
+      hora: document.getElementById('horaTexto'),
+      progress: document.getElementById('priorityProgress'),
+      priorityCard: document.getElementById('priorityCard'),
+      priorityQuestion: document.getElementById('priorityQuestion'),
+      priorityResult: document.getElementById('priorityResult'),
+      priorityReset: document.getElementById('priorityReset'),
+      priorityButtons: Array.from(document.querySelectorAll('.priority-option')),
+      itemsBody: document.getElementById('itemsBody'),
+      itemTemplate: document.getElementById('itemTemplate'),
+      itemsSummary: document.getElementById('itemsSummary'),
+      addItem: document.getElementById('addItem'),
+      observacoes: document.getElementById('observacoes'),
+      clearBtn: document.getElementById('clearBtn'),
+      submitBtn: document.getElementById('submitBtn')
     };
 
     let prioridade = '';
-    let etapaPrioridade = 1;
-    let respostasTemporarias = [];
+    let priorityStep = 0;
 
-    function pad(n) {
-      return String(n).padStart(2, '0');
-    }
+    function pad(value) { return String(value).padStart(2, '0'); }
 
-    function formatDateBR(date) {
-      return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()}`;
-    }
-
-    function formatTimeBR(date) {
-      return `${pad(date.getHours())}:${pad(date.getMinutes())}`;
-    }
-
-    function setDateTimeNow() {
+    function setDateTime() {
       const now = new Date();
-      dataTexto.textContent = formatDateBR(now);
-      horaTexto.textContent = formatTimeBR(now);
+      el.data.textContent = `${pad(now.getDate())}/${pad(now.getMonth() + 1)}/${now.getFullYear()}`;
+      el.hora.textContent = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
     }
 
-    function updateSummary() {
-      const rows = itemsBody.querySelectorAll('.item-row').length;
-      itemsSummary.textContent = rows === 1 ? '1 item adicionado.' : `${rows} itens adicionados.`;
+    function renderPriority() {
+      el.progress.textContent = `Pergunta ${priorityStep + 1}`;
+      el.priorityQuestion.textContent = `${priorityStep + 1}. ${priorityQuestions[priorityStep]}`;
+      el.priorityCard.hidden = false;
+      el.progress.hidden = false;
+      el.priorityResult.className = 'priority-result';
+      el.priorityReset.classList.remove('visible');
     }
 
-    function getRowData(row) {
-      return {
-        quantidade: row.querySelector('.qty-input').value.trim(),
-        unidade: row.querySelector('.unit-input').value.trim(),
-        descricao: row.querySelector('.desc-input').value.trim(),
-      };
-    }
-
-    function rowIsComplete(row) {
-      const { quantidade, unidade, descricao } = getRowData(row);
-      return Boolean(quantidade && unidade && descricao);
-    }
-
-    function createRow(focus = false) {
-      const fragment = itemRowTemplate.content.cloneNode(true);
-      const row = fragment.querySelector('.item-row');
-      const qty = row.querySelector('.qty-input');
-      const unit = row.querySelector('.unit-input');
-      const desc = row.querySelector('.desc-input');
-      const removeBtn = row.querySelector('.remove-btn');
-
-      qty.addEventListener('input', () => {
-        if (qty.value.length > 4) {
-          qty.value = qty.value.slice(0, 4);
-        }
-      });
-
-      desc.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter' && !event.shiftKey) {
-          event.preventDefault();
-
-          const rows = Array.from(itemsBody.querySelectorAll('.item-row'));
-          const isLastRow = rows[rows.length - 1] === row;
-
-          if (isLastRow && rowIsComplete(row)) {
-            itemsBody.appendChild(createRow(true));
-            updateSummary();
-          }
-        }
-      });
-
-      removeBtn.addEventListener('click', () => {
-        const rows = itemsBody.querySelectorAll('.item-row');
-
-        if (rows.length === 1) {
-          qty.value = '';
-          unit.value = '';
-          desc.value = '';
-          return;
-        }
-
-        row.remove();
-        updateSummary();
-      });
-
-      if (focus) {
-        setTimeout(() => qty.focus(), 0);
-      }
-
-      updateSummary();
-      return fragment;
-    }
-
-    function addInitialRow() {
-      itemsBody.appendChild(createRow());
-      updateSummary();
-    }
-
-    function renderPriorityQuestion() {
-      priorityProgress.textContent = `Pergunta ${etapaPrioridade}`;
-      priorityQuestionText.textContent = perguntasPrioridade[etapaPrioridade];
-      priorityQuestionCard.hidden = false;
-      priorityProgress.hidden = false;
-
-      priorityOptionButtons.forEach((button) => {
-        button.disabled = false;
-      });
-    }
-
-    function showPriorityResult(value) {
+    function finishPriority(value) {
       prioridade = value;
-      priorityQuestionCard.hidden = true;
-      priorityProgress.hidden = true;
-      priorityResult.textContent = `Classificação definida: ${value}`;
+      el.priorityCard.hidden = true;
+      el.progress.hidden = true;
+      el.priorityResult.textContent = `Classificação definida: ${value}`;
+      const cssClass = value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      el.priorityResult.className = `priority-result visible ${cssClass}`;
+      el.priorityReset.classList.add('visible');
+    }
 
-      const resultClass = value
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '');
-
-      priorityResult.className = `priority-result visible ${resultClass}`;
-      priorityResetBtn.classList.add('visible');
+    function answerPriority(answer) {
+      if (priorityStep === 0) {
+        if (answer === 'sim') return finishPriority('Emergencial');
+        priorityStep = 1;
+        return renderPriority();
+      }
+      if (priorityStep === 1) {
+        if (answer === 'sim') return finishPriority('Urgente');
+        priorityStep = 2;
+        return renderPriority();
+      }
+      finishPriority(answer === 'sim' ? 'Necessária' : 'Programada');
     }
 
     function resetPriority() {
       prioridade = '';
-      etapaPrioridade = 1;
-      respostasTemporarias = [];
-      priorityResult.textContent = '';
-      priorityResult.className = 'priority-result';
-      priorityResetBtn.classList.remove('visible');
-      renderPriorityQuestion();
+      priorityStep = 0;
+      renderPriority();
     }
 
-    function handlePriorityAnswer(answer) {
-      if (prioridade) {
-        return;
-      }
-
-      respostasTemporarias.push({
-        pergunta: etapaPrioridade,
-        resposta: answer
-      });
-
-      priorityOptionButtons.forEach((button) => {
-        button.disabled = true;
-      });
-
-      if (etapaPrioridade === 1) {
-        if (answer === 'sim') {
-          showPriorityResult('Emergencial');
-          return;
-        }
-
-        etapaPrioridade = 2;
-        renderPriorityQuestion();
-        return;
-      }
-
-      if (etapaPrioridade === 2) {
-        if (answer === 'sim') {
-          showPriorityResult('Urgente');
-          return;
-        }
-
-        etapaPrioridade = 3;
-        renderPriorityQuestion();
-        return;
-      }
-
-      showPriorityResult(answer === 'sim' ? 'Necessária' : 'Programada');
+    function updateItemSummary() {
+      const count = el.itemsBody.querySelectorAll('.item-row').length;
+      el.itemsSummary.textContent = count === 1 ? '1 item adicionado.' : `${count} itens adicionados.`;
     }
 
-    priorityOptionButtons.forEach((button) => {
-      button.addEventListener('click', () => {
-        handlePriorityAnswer(button.dataset.answer);
+    function addItem(focus = false) {
+      const fragment = el.itemTemplate.content.cloneNode(true);
+      const row = fragment.querySelector('.item-row');
+      const qty = row.querySelector('.qty-input');
+      const remove = row.querySelector('.remove-btn');
+
+      qty.addEventListener('input', () => {
+        if (qty.value.length > 4) qty.value = qty.value.slice(0, 4);
       });
-    });
 
-    priorityResetBtn.addEventListener('click', resetPriority);
+      remove.addEventListener('click', () => {
+        const rows = el.itemsBody.querySelectorAll('.item-row');
+        if (rows.length === 1) {
+          row.querySelectorAll('input, textarea').forEach((input) => { input.value = ''; });
+          row.querySelector('select').value = '';
+        } else {
+          row.remove();
+          updateItemSummary();
+        }
+      });
 
-    function clearAll() {
-      document.getElementById('empresa').value = '';
-      document.getElementById('solicitante').value = '';
-      document.getElementById('obra').value = '';
-      document.getElementById('observacoes').value = '';
-      itemsBody.innerHTML = '';
-      addInitialRow();
-      resetPriority();
-      setDateTimeNow();
+      el.itemsBody.appendChild(fragment);
+      updateItemSummary();
+      if (focus) setTimeout(() => qty.focus(), 0);
+    }
+
+    function collectItems() {
+      return Array.from(el.itemsBody.querySelectorAll('.item-row')).map((row) => ({
+        quantidade: row.querySelector('.qty-input').value.trim(),
+        unidade: row.querySelector('.unit-input').value.trim(),
+        descricao: row.querySelector('.desc-input').value.trim()
+      })).filter((item) => item.quantidade || item.unidade || item.descricao);
     }
 
     function collectData() {
-      const empresa = document.getElementById('empresa').value.trim();
-      const solicitante = document.getElementById('solicitante').value.trim();
-      const obra = document.getElementById('obra').value.trim();
-      const observacoes = document.getElementById('observacoes').value.trim();
-      const itens = Array.from(itemsBody.querySelectorAll('.item-row'))
-        .map(getRowData)
-        .filter((item) => item.quantidade || item.unidade || item.descricao);
-
       return {
-        empresa,
-        solicitante,
-        obra,
-        data: dataTexto.textContent,
-        hora: horaTexto.textContent,
+        empresa: el.empresa.value.trim(),
+        solicitante: el.solicitante.value.trim(),
+        obra: el.obra.value.trim(),
+        data: el.data.textContent,
+        hora: el.hora.textContent,
         prioridade,
-        observacoes,
-        itens,
+        observacoes: el.observacoes.value.trim(),
+        itens: collectItems()
       };
     }
 
-    function validateData(data) {
-      if (!data.empresa) {
-        return 'Selecione a empresa solicitante.';
+    function validate(data) {
+      if (!data.empresa) return 'Selecione a empresa solicitante.';
+      if (!data.solicitante) return 'Selecione o solicitante.';
+      if (!data.obra) return 'Informe o destino / obra.';
+      if (!data.prioridade) return 'Responda às perguntas para definir a prioridade.';
+      if (!data.itens.length) return 'Adicione pelo menos um item.';
+      for (let index = 0; index < data.itens.length; index += 1) {
+        const item = data.itens[index];
+        if (!item.quantidade || Number(item.quantidade) <= 0) return `Informe uma quantidade válida no item ${index + 1}.`;
+        if (!item.unidade) return `Selecione a unidade do item ${index + 1}.`;
+        if (!item.descricao) return `Informe a descrição do item ${index + 1}.`;
       }
-
-      if (!data.solicitante) {
-        return 'Selecione o solicitante.';
-      }
-
-      if (!data.obra) {
-        return 'Informe o destino / obra.';
-      }
-
-      if (!data.prioridade) {
-        return 'Responda às perguntas para definir a classificação de prioridade.';
-      }
-
-      if (data.itens.length === 0) {
-        return 'Adicione pelo menos um item.';
-      }
-
-      for (let i = 0; i < data.itens.length; i++) {
-        const item = data.itens[i];
-
-        if (!item.quantidade) {
-          return `Informe a quantidade do item ${i + 1}.`;
-        }
-
-        if (!item.unidade) {
-          return `Selecione a unidade de medida do item ${i + 1}.`;
-        }
-
-        if (!item.descricao) {
-          return `Informe a descrição do item ${i + 1}.`;
-        }
-      }
-
-      return null;
+      return '';
     }
 
-    addItemBtn.addEventListener('click', () => {
-      itemsBody.appendChild(createRow(true));
-      updateSummary();
-    });
+    function clearAll() {
+      el.empresa.value = '';
+      el.solicitante.value = '';
+      el.obra.value = '';
+      el.observacoes.value = '';
+      el.itemsBody.innerHTML = '';
+      addItem();
+      resetPriority();
+      setDateTime();
+    }
 
-    clearBtn.addEventListener('click', clearAll);
-
-    submitBtn.addEventListener('click', () => {
+    async function submitRequest() {
       const data = collectData();
-      const error = validateData(data);
-
+      const error = validate(data);
       if (error) {
         alert(error);
         return;
       }
 
-     fetch(SCRIPT_URL, {
-  method: 'POST',
-  mode: 'no-cors',
-  headers: {
-    'Content-Type': 'text/plain;charset=utf-8'
-  },
-  body: JSON.stringify(data)
-})
-  .then(() => {
-    alert(`Solicitação enviada com sucesso!\nPrioridade: ${data.prioridade}`);
-    clearAll();
-  })
-  .catch(() => {
-    alert('Erro ao enviar a solicitação. Verifique a conexão.');
-  });
+      el.submitBtn.disabled = true;
+      el.submitBtn.textContent = 'Enviando...';
 
-    setDateTimeNow();
+      try {
+        await fetch(SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          credentials: 'omit',
+          redirect: 'follow',
+          body: JSON.stringify(data)
+        });
+        alert(`Solicitação enviada com sucesso!\nPrioridade: ${data.prioridade}`);
+        clearAll();
+      } catch (error) {
+        console.error(error);
+        alert('Não foi possível enviar a solicitação. Verifique a conexão e tente novamente.');
+      } finally {
+        el.submitBtn.disabled = false;
+        el.submitBtn.textContent = 'Salvar solicitação';
+      }
+    }
+
+    el.logo.addEventListener('error', () => {
+      el.logo.style.display = 'none';
+      el.logoPlaceholder.style.display = 'block';
+    });
+    el.priorityButtons.forEach((button) => button.addEventListener('click', () => answerPriority(button.dataset.answer)));
+    el.priorityReset.addEventListener('click', resetPriority);
+    el.addItem.addEventListener('click', () => addItem(true));
+    el.clearBtn.addEventListener('click', clearAll);
+    el.submitBtn.addEventListener('click', submitRequest);
+
+    setDateTime();
     resetPriority();
-    addInitialRow();
+    addItem();
   </script>
 </body>
 </html>
