@@ -21,11 +21,13 @@
 
     * { box-sizing: border-box; }
     html, body { margin: 0; padding: 0; }
+
     body {
       background: linear-gradient(180deg, #eef8f1 0%, var(--bg) 100%);
       color: var(--text);
       font-family: Calibri, Arial, sans-serif;
     }
+
     input, select, textarea, button {
       font-family: Calibri, Arial, sans-serif;
     }
@@ -195,11 +197,13 @@
     }
 
     .btn:hover { transform: translateY(-1px); }
+
     .btn-primary {
       background: var(--accent-2);
       color: #fff;
       box-shadow: 0 6px 14px rgba(76, 154, 106, 0.18);
     }
+
     .btn-secondary {
       background: #e5ebe7;
       color: #243128;
@@ -245,7 +249,7 @@
       width: 100%;
       border: 1px solid var(--line);
       border-radius: 10px;
-      padding: 10px 10px;
+      padding: 10px;
       font-size: 14px;
       font-family: inherit;
       background: #fff;
@@ -304,18 +308,137 @@
       color: #5b6470;
     }
 
+    .priority-flow {
+      display: grid;
+      gap: 12px;
+    }
+
+    .priority-question {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+      background: #fbfdfc;
+    }
+
+    .priority-question[hidden] {
+      display: none;
+    }
+
+    .priority-question-title {
+      margin-bottom: 10px;
+      font-size: 14px;
+      line-height: 1.4;
+      font-weight: 700;
+      color: #34423a;
+    }
+
+    .priority-options {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .priority-option {
+      min-width: 94px;
+      padding: 10px 18px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #fff;
+      color: #34423a;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.06s ease;
+    }
+
+    .priority-option:hover {
+      border-color: var(--accent-2);
+      background: #f3faf5;
+      transform: translateY(-1px);
+    }
+
+    .priority-option.selected-yes {
+      background: var(--accent-2);
+      border-color: var(--accent-2);
+      color: #fff;
+    }
+
+    .priority-option.selected-no {
+      background: #e5ebe7;
+      border-color: #cbd5ce;
+      color: #243128;
+    }
+
+    .priority-option:disabled {
+      cursor: default;
+      opacity: 1;
+    }
+
+    .priority-result {
+      display: none;
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      font-weight: 700;
+    }
+
+    .priority-result.visible { display: block; }
+
+    .priority-result.emergencial {
+      background: #fee2e2;
+      border-color: #fecaca;
+      color: #991b1b;
+    }
+
+    .priority-result.urgente {
+      background: #ffedd5;
+      border-color: #fed7aa;
+      color: #9a3412;
+    }
+
+    .priority-result.necessaria {
+      background: #fef3c7;
+      border-color: #fde68a;
+      color: #92400e;
+    }
+
+    .priority-result.programada {
+      background: #dcfce7;
+      border-color: #bbf7d0;
+      color: #166534;
+    }
+
+    .priority-reset {
+      display: none;
+      width: fit-content;
+      margin-top: 2px;
+      padding: 0;
+      border: none;
+      background: transparent;
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    .priority-reset.visible { display: inline-block; }
+
     @media (max-width: 900px) {
       .header {
         flex-direction: column;
         align-items: flex-start;
       }
+
       .logo-box {
         width: 132px;
         height: 88px;
       }
+
       .field, .field.company, .field.obra, .field.meta {
         grid-column: span 12;
       }
+
       .col-qty { width: 88px; }
       .col-unit { width: 118px; }
       .col-action { width: 94px; }
@@ -324,14 +447,11 @@
     @media (max-width: 768px) {
       .content { padding: 16px; }
       .section { padding: 16px; }
-      .table-wrap {
-        overflow: visible;
-      }
-      table {
-        min-width: 0;
-      }
+      .table-wrap { overflow: visible; }
+      table { min-width: 0; }
       thead { display: none; }
       tbody, tr, td { display: block; width: 100%; }
+
       tbody tr {
         margin-bottom: 14px;
         border: 1px solid var(--line);
@@ -339,11 +459,14 @@
         overflow: hidden;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
       }
+
       tbody td {
         border-bottom: 1px solid #e4ebe6;
         padding: 12px;
       }
+
       tbody td:last-child { border-bottom: none; }
+
       tbody td::before {
         content: attr(data-label);
         display: block;
@@ -352,6 +475,7 @@
         color: #355043;
         margin-bottom: 6px;
       }
+
       .item-input {
         max-width: 100%;
         text-align: left;
@@ -416,6 +540,53 @@ SOLICITAÇÕES INCOMPLETAS OU INCORRETAS PODERÃO CAUSAR ATRASOS NA COMPRA. O SO
                 <span><strong>Hora:</strong> <span id="horaTexto">--:--</span></span>
               </div>
             </div>
+          </div>
+        </div>
+
+        <div class="section" id="prioritySection">
+          <h2>Classificação de prioridade</h2>
+
+          <div class="hint" style="margin-bottom:14px;">
+            Responda às perguntas na ordem apresentada. A classificação será definida automaticamente.
+          </div>
+
+          <div class="priority-flow">
+            <div class="priority-question" id="priorityQuestion1">
+              <div class="priority-question-title">
+                1. A atividade já está parada ou parará hoje sem este item?
+              </div>
+              <div class="priority-options">
+                <button type="button" class="priority-option" data-question="1" data-answer="sim">Sim</button>
+                <button type="button" class="priority-option" data-question="1" data-answer="nao">Não</button>
+              </div>
+            </div>
+
+            <div class="priority-question" id="priorityQuestion2" hidden>
+              <div class="priority-question-title">
+                2. Se não for atendida em até 1 dia útil, haverá atraso no cronograma,
+                descumprimento contratual ou retrabalho?
+              </div>
+              <div class="priority-options">
+                <button type="button" class="priority-option" data-question="2" data-answer="sim">Sim</button>
+                <button type="button" class="priority-option" data-question="2" data-answer="nao">Não</button>
+              </div>
+            </div>
+
+            <div class="priority-question" id="priorityQuestion3" hidden>
+              <div class="priority-question-title">
+                3. A necessidade ocorrerá em menos de 5 dias úteis?
+              </div>
+              <div class="priority-options">
+                <button type="button" class="priority-option" data-question="3" data-answer="sim">Sim</button>
+                <button type="button" class="priority-option" data-question="3" data-answer="nao">Não</button>
+              </div>
+            </div>
+
+            <div id="priorityResult" class="priority-result" aria-live="polite"></div>
+
+            <button type="button" id="priorityResetBtn" class="priority-reset">
+              Refazer classificação
+            </button>
           </div>
         </div>
 
@@ -505,7 +676,18 @@ SOLICITAÇÕES INCOMPLETAS OU INCORRETAS PODERÃO CAUSAR ATRASOS NA COMPRA. O SO
     const dataTexto = document.getElementById('dataTexto');
     const horaTexto = document.getElementById('horaTexto');
 
+    const priorityQuestion1 = document.getElementById('priorityQuestion1');
+    const priorityQuestion2 = document.getElementById('priorityQuestion2');
+    const priorityQuestion3 = document.getElementById('priorityQuestion3');
+    const priorityResult = document.getElementById('priorityResult');
+    const priorityResetBtn = document.getElementById('priorityResetBtn');
+
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzHUBuxnE-E0Inepu23v0bTtiwlhf3iJGBjS3-1MA28zWszoGbAFWsPtu0aon72iMpI/exec';
+
+    let prioridade = '';
+    let respostaPrioridade1 = '';
+    let respostaPrioridade2 = '';
+    let respostaPrioridade3 = '';
 
     function pad(n) {
       return String(n).padStart(2, '0');
@@ -551,49 +733,36 @@ SOLICITAÇÕES INCOMPLETAS OU INCORRETAS PODERÃO CAUSAR ATRASOS NA COMPRA. O SO
       const desc = row.querySelector('.desc-input');
       const removeBtn = row.querySelector('.remove-btn');
 
-      function maybeAddNext() {
-        const rows = Array.from(itemsBody.querySelectorAll('.item-row'));
-        const isLastRow = rows[rows.length - 1] === row;
-
-        if (isLastRow && rowIsComplete(row)) {
-          const nextRow = createRow(false);
-          itemsBody.appendChild(nextRow);
-          updateSummary();
-        }
-      }
-
       qty.addEventListener('input', () => {
-        if (qty.value.length > 4) qty.value = qty.value.slice(0, 4);
+        if (qty.value.length > 4) {
+          qty.value = qty.value.slice(0, 4);
+        }
       });
 
-      unit.addEventListener('change', () => {
-        // sem ação para evitar criação precoce
+      desc.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' && !event.shiftKey) {
+          event.preventDefault();
+
+          const rows = Array.from(itemsBody.querySelectorAll('.item-row'));
+          const isLastRow = rows[rows.length - 1] === row;
+
+          if (isLastRow && rowIsComplete(row)) {
+            itemsBody.appendChild(createRow(true));
+            updateSummary();
+          }
+        }
       });
 
-      desc.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault();
-
-    const rows = Array.from(itemsBody.querySelectorAll('.item-row'));
-    const isLastRow = rows[rows.length - 1] === row;
-
-    if (isLastRow && rowIsComplete(row)) {
-      const nextRow = createRow(true);
-      itemsBody.appendChild(nextRow);
-      updateSummary();
-      return;
-    }
-  }
-});
-      
       removeBtn.addEventListener('click', () => {
         const rows = itemsBody.querySelectorAll('.item-row');
+
         if (rows.length === 1) {
           qty.value = '';
           unit.value = '';
           desc.value = '';
           return;
         }
+
         row.remove();
         updateSummary();
       });
@@ -611,6 +780,105 @@ SOLICITAÇÕES INCOMPLETAS OU INCORRETAS PODERÃO CAUSAR ATRASOS NA COMPRA. O SO
       updateSummary();
     }
 
+    function clearPrioritySelections() {
+      document.querySelectorAll('.priority-option').forEach((button) => {
+        button.classList.remove('selected-yes', 'selected-no');
+        button.disabled = false;
+      });
+    }
+
+    function markPriorityButton(question, answer) {
+      document.querySelectorAll(`.priority-option[data-question="${question}"]`).forEach((button) => {
+        button.classList.remove('selected-yes', 'selected-no');
+
+        if (button.dataset.answer === answer) {
+          button.classList.add(answer === 'sim' ? 'selected-yes' : 'selected-no');
+        }
+      });
+    }
+
+    function showPriorityResult(value) {
+      prioridade = value;
+      priorityResult.textContent = `Classificação definida: ${value}`;
+
+      const resultClass = value
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+
+      priorityResult.className = `priority-result visible ${resultClass}`;
+      priorityResetBtn.classList.add('visible');
+
+      document.querySelectorAll('.priority-option').forEach((button) => {
+        button.disabled = true;
+      });
+    }
+
+    function resetPriority() {
+      prioridade = '';
+      respostaPrioridade1 = '';
+      respostaPrioridade2 = '';
+      respostaPrioridade3 = '';
+
+      clearPrioritySelections();
+      priorityQuestion1.hidden = false;
+      priorityQuestion2.hidden = true;
+      priorityQuestion3.hidden = true;
+      priorityResult.textContent = '';
+      priorityResult.className = 'priority-result';
+      priorityResetBtn.classList.remove('visible');
+    }
+
+    function handlePriorityAnswer(question, answer) {
+      if (prioridade) {
+        return;
+      }
+
+      markPriorityButton(question, answer);
+
+      if (question === 1) {
+        respostaPrioridade1 = answer === 'sim' ? 'Sim' : 'Não';
+
+        if (answer === 'sim') {
+          respostaPrioridade2 = 'Não se aplica';
+          respostaPrioridade3 = 'Não se aplica';
+          showPriorityResult('Emergencial');
+          return;
+        }
+
+        priorityQuestion2.hidden = false;
+        priorityQuestion2.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        return;
+      }
+
+      if (question === 2) {
+        respostaPrioridade2 = answer === 'sim' ? 'Sim' : 'Não';
+
+        if (answer === 'sim') {
+          respostaPrioridade3 = 'Não se aplica';
+          showPriorityResult('Urgente');
+          return;
+        }
+
+        priorityQuestion3.hidden = false;
+        priorityQuestion3.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        return;
+      }
+
+      if (question === 3) {
+        respostaPrioridade3 = answer === 'sim' ? 'Sim' : 'Não';
+        showPriorityResult(answer === 'sim' ? 'Necessária' : 'Programada');
+      }
+    }
+
+    document.querySelectorAll('.priority-option').forEach((button) => {
+      button.addEventListener('click', () => {
+        handlePriorityAnswer(Number(button.dataset.question), button.dataset.answer);
+      });
+    });
+
+    priorityResetBtn.addEventListener('click', resetPriority);
+
     function clearAll() {
       document.getElementById('empresa').value = '';
       document.getElementById('solicitante').value = '';
@@ -618,6 +886,7 @@ SOLICITAÇÕES INCOMPLETAS OU INCORRETAS PODERÃO CAUSAR ATRASOS NA COMPRA. O SO
       document.getElementById('observacoes').value = '';
       itemsBody.innerHTML = '';
       addInitialRow();
+      resetPriority();
       setDateTimeNow();
     }
 
@@ -628,7 +897,7 @@ SOLICITAÇÕES INCOMPLETAS OU INCORRETAS PODERÃO CAUSAR ATRASOS NA COMPRA. O SO
       const observacoes = document.getElementById('observacoes').value.trim();
       const itens = Array.from(itemsBody.querySelectorAll('.item-row'))
         .map(getRowData)
-        .filter(item => item.quantidade || item.unidade || item.descricao);
+        .filter((item) => item.quantidade || item.unidade || item.descricao);
 
       return {
         empresa,
@@ -636,22 +905,52 @@ SOLICITAÇÕES INCOMPLETAS OU INCORRETAS PODERÃO CAUSAR ATRASOS NA COMPRA. O SO
         obra,
         data: dataTexto.textContent,
         hora: horaTexto.textContent,
+        prioridade,
+        prioridade_resposta_1: respostaPrioridade1,
+        prioridade_resposta_2: respostaPrioridade2,
+        prioridade_resposta_3: respostaPrioridade3,
         observacoes,
         itens,
       };
     }
 
     function validateData(data) {
-      if (!data.empresa) return 'Selecione a empresa solicitante.';
-      if (!data.solicitante) return 'Selecione o solicitante.';
-      if (!data.obra) return 'Informe o destino / obra.';
-      if (data.itens.length === 0) return 'Adicione pelo menos um item.';
+      if (!data.empresa) {
+        return 'Selecione a empresa solicitante.';
+      }
+
+      if (!data.solicitante) {
+        return 'Selecione o solicitante.';
+      }
+
+      if (!data.obra) {
+        return 'Informe o destino / obra.';
+      }
+
+      if (!data.prioridade) {
+        return 'Responda às perguntas para definir a classificação de prioridade.';
+      }
+
+      if (data.itens.length === 0) {
+        return 'Adicione pelo menos um item.';
+      }
+
       for (let i = 0; i < data.itens.length; i++) {
         const item = data.itens[i];
-        if (!item.quantidade) return `Informe a quantidade do item ${i + 1}.`;
-        if (!item.unidade) return `Selecione a unidade de medida do item ${i + 1}.`;
-        if (!item.descricao) return `Informe a descrição do item ${i + 1}.`;
+
+        if (!item.quantidade) {
+          return `Informe a quantidade do item ${i + 1}.`;
+        }
+
+        if (!item.unidade) {
+          return `Selecione a unidade de medida do item ${i + 1}.`;
+        }
+
+        if (!item.descricao) {
+          return `Informe a descrição do item ${i + 1}.`;
+        }
       }
+
       return null;
     }
 
@@ -665,6 +964,7 @@ SOLICITAÇÕES INCOMPLETAS OU INCORRETAS PODERÃO CAUSAR ATRASOS NA COMPRA. O SO
     submitBtn.addEventListener('click', () => {
       const data = collectData();
       const error = validateData(data);
+
       if (error) {
         alert(error);
         return;
@@ -678,16 +978,17 @@ SOLICITAÇÕES INCOMPLETAS OU INCORRETAS PODERÃO CAUSAR ATRASOS NA COMPRA. O SO
         },
         body: JSON.stringify(data)
       })
-      .then(() => {
-        alert('Solicitação enviada com sucesso!');
-        clearAll();
-      })
-      .catch(() => {
-        alert('Erro ao enviar a solicitação. Verifique a conexão.');
-      });
+        .then(() => {
+          alert(`Solicitação enviada com sucesso!\nPrioridade: ${data.prioridade}`);
+          clearAll();
+        })
+        .catch(() => {
+          alert('Erro ao enviar a solicitação. Verifique a conexão.');
+        });
     });
 
     setDateTimeNow();
+    resetPriority();
     addInitialRow();
   </script>
 </body>
