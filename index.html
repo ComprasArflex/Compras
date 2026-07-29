@@ -5,107 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Requisição de Materiais para Obra</title>
   <style>
-    :root {
-      --bg: #edf7f0;
-      --card: #ffffff;
-      --text: #1f2937;
-      --muted: #64748b;
-      --line: #cfd8d3;
-      --accent: #236b49;
-      --accent-2: #4c9a6a;
-      --danger: #b91c1c;
-      --radius: 18px;
-      --shadow: 0 10px 28px rgba(30, 41, 59, 0.08);
-    }
-
-    * { box-sizing: border-box; }
-    html, body { margin: 0; padding: 0; }
-    body {
-      min-height: 100vh;
-      background: linear-gradient(180deg, #eef8f1 0%, var(--bg) 100%);
-      color: var(--text);
-      font-family: Calibri, Arial, sans-serif;
-    }
-    button, input, select, textarea { font: inherit; }
-
-    .container { max-width: 1180px; margin: 20px auto; padding: 0 14px 28px; }
-    .card { background: var(--card); border: 1px solid rgba(76,154,106,.15); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
-    .header { display: flex; gap: 18px; align-items: center; padding: 20px 22px; border-bottom: 1px solid var(--line); background: linear-gradient(135deg,#f7fcf8,#e9f6ef); }
-    .logo-box { width: 122px; min-width: 122px; height: 92px; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #fff; border: 1px solid var(--line); border-radius: 16px; }
-    .logo-box img { width: 100%; height: 100%; object-fit: contain; }
-    .logo-placeholder { display: none; padding: 10px; color: var(--muted); text-align: center; font-size: 12px; }
-    .header h1 { margin: 0 0 10px; color: var(--accent); font-size: 24px; line-height: 1.15; }
-    .header p { margin: 0; white-space: pre-line; color: #2f3a35; font-size: 13px; line-height: 1.5; font-weight: 700; }
-
-    .content { display: grid; gap: 18px; padding: 20px 22px 22px; }
-    .section { padding: 18px; background: #fff; border: 1px solid var(--line); border-radius: 16px; }
-    .section h2 { margin: 0 0 14px; color: var(--accent); font-size: 18px; }
-    .grid { display: grid; grid-template-columns: repeat(12,1fr); gap: 14px; }
-    .field { grid-column: span 6; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-    .field.company { grid-column: span 3; }
-    .field.obra { grid-column: span 6; }
-    .field.meta { grid-column: span 3; }
-    .field.wide { grid-column: span 12; }
-    label { color: #34423a; font-size: 13px; font-weight: 700; }
-    input, select, textarea { width: 100%; padding: 11px 12px; color: var(--text); background: #fff; border: 1px solid var(--line); border-radius: 12px; outline: none; }
-    input:focus, select:focus, textarea:focus { border-color: var(--accent-2); box-shadow: 0 0 0 3px rgba(76,154,106,.12); }
-    textarea { min-height: 88px; resize: vertical; }
-    .meta-box { display: flex; gap: 14px; flex-wrap: wrap; width: 100%; padding: 10px 12px; color: #5b6470; background: #f4f5f6; border: 1px solid #e1e4e7; border-radius: 12px; font-size: 12px; }
-    .hint { color: var(--muted); font-size: 12px; line-height: 1.45; }
-
-    .priority-flow { display: grid; gap: 12px; }
-    .priority-progress { color: var(--muted); font-size: 12px; font-weight: 700; }
-    .priority-card { padding: 14px; background: #fbfdfc; border: 1px solid var(--line); border-radius: 14px; }
-    .priority-title { margin-bottom: 10px; color: #34423a; font-size: 14px; line-height: 1.4; font-weight: 700; }
-    .priority-options { display: flex; gap: 10px; flex-wrap: wrap; }
-    .priority-option { min-width: 94px; padding: 10px 18px; color: #34423a; background: #fff; border: 1px solid var(--line); border-radius: 999px; font-weight: 700; cursor: pointer; }
-    .priority-option:hover { background: #f3faf5; border-color: var(--accent-2); }
-    .priority-result { display: none; padding: 14px 16px; border: 1px solid var(--line); border-radius: 14px; font-weight: 700; }
-    .priority-result.visible { display: block; }
-    .priority-result.emergencial { color: #991b1b; background: #fee2e2; border-color: #fecaca; }
-    .priority-result.urgente { color: #9a3412; background: #ffedd5; border-color: #fed7aa; }
-    .priority-result.necessaria { color: #92400e; background: #fef3c7; border-color: #fde68a; }
-    .priority-result.programada { color: #166534; background: #dcfce7; border-color: #bbf7d0; }
-    .priority-reset { display: none; width: fit-content; padding: 0; color: var(--accent); background: transparent; border: 0; font-size: 13px; font-weight: 700; text-decoration: underline; cursor: pointer; }
-    .priority-reset.visible { display: inline-block; }
-
-    .section-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
-    .section-header h2 { margin-bottom: 4px; }
-    .btn { padding: 11px 16px; border: 0; border-radius: 999px; font-weight: 700; cursor: pointer; }
-    .btn-primary { color: #fff; background: var(--accent-2); box-shadow: 0 6px 14px rgba(76,154,106,.18); }
-    .btn-secondary { color: #243128; background: #e5ebe7; }
-    .btn:disabled { opacity: .65; cursor: wait; }
-
-    .table-wrap { overflow: hidden; border: 1px solid var(--line); border-radius: 16px; }
-    table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-    th { padding: 12px; color: #355043; background: #f3faf5; border-bottom: 1px solid var(--line); text-align: left; font-size: 13px; }
-    td { padding: 10px 12px; background: #fff; border-bottom: 1px solid #e4ebe6; vertical-align: top; }
-    tbody tr:last-child td { border-bottom: 0; }
-    .col-qty { width: 108px; }
-    .col-unit { width: 150px; }
-    .col-action { width: 108px; }
-    .item-input, .item-select, .item-textarea { width: 100%; padding: 10px; background: #fff; border: 1px solid var(--line); border-radius: 10px; }
-    .item-input { max-width: 92px; text-align: right; }
-    .item-textarea { min-height: 76px; resize: vertical; }
-    .remove-btn { width: 100%; padding: 10px 12px; color: var(--danger); background: #fff5f5; border: 1px solid #f4c7c7; border-radius: 10px; font-weight: 700; cursor: pointer; }
-    .summary { margin-top: 8px; color: var(--muted); font-size: 12px; }
-    .footer-actions { display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
-
-    @media (max-width: 900px) {
-      .header { align-items: flex-start; }
-      .field, .field.company, .field.obra, .field.meta { grid-column: span 12; }
-    }
-    @media (max-width: 768px) {
-      .header { flex-direction: column; }
-      .content { padding: 16px; }
-      .section { padding: 16px; }
-      .table-wrap { overflow: visible; border: 0; }
-      table, tbody, tr, td { display: block; width: 100%; }
-      thead { display: none; }
-      tbody tr { margin-bottom: 14px; overflow: hidden; border: 1px solid var(--line); border-radius: 16px; }
-      td::before { content: attr(data-label); display: block; margin-bottom: 6px; color: #355043; font-size: 12px; font-weight: 700; }
-      .item-input { max-width: none; text-align: left; }
-    }
+    :root{--bg:#edf7f0;--card:#fff;--text:#1f2937;--muted:#64748b;--line:#cfd8d3;--accent:#236b49;--accent2:#4c9a6a;--danger:#b91c1c;--radius:18px;--shadow:0 10px 28px rgba(30,41,59,.08)}
+    *{box-sizing:border-box}html,body{margin:0;padding:0}body{min-height:100vh;background:linear-gradient(180deg,#eef8f1 0%,var(--bg) 100%);color:var(--text);font-family:Calibri,Arial,sans-serif}button,input,select,textarea{font:inherit}
+    .container{max-width:1180px;margin:20px auto;padding:0 14px 28px}.card{background:var(--card);border:1px solid rgba(76,154,106,.15);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}.header{display:flex;gap:18px;align-items:center;padding:20px 22px;border-bottom:1px solid var(--line);background:linear-gradient(135deg,#f7fcf8,#e9f6ef)}.logo-box{width:122px;min-width:122px;height:92px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#fff;border:1px solid var(--line);border-radius:16px}.logo-box img{width:100%;height:100%;object-fit:contain}.logo-placeholder{display:none;padding:10px;color:var(--muted);text-align:center;font-size:12px}.header h1{margin:0 0 10px;color:var(--accent);font-size:24px;line-height:1.15}.header p{margin:0;white-space:pre-line;color:#2f3a35;font-size:13px;line-height:1.5;font-weight:700}
+    .content{display:grid;gap:18px;padding:20px 22px 22px}.section{padding:18px;background:#fff;border:1px solid var(--line);border-radius:16px}.section h2{margin:0 0 14px;color:var(--accent);font-size:18px}.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}.field{grid-column:span 6;display:flex;flex-direction:column;gap:6px;min-width:0}.field.company{grid-column:span 3}.field.obra{grid-column:span 6}.field.meta{grid-column:span 3}.field.wide{grid-column:span 12}label{color:#34423a;font-size:13px;font-weight:700}input,select,textarea{width:100%;padding:11px 12px;color:var(--text);background:#fff;border:1px solid var(--line);border-radius:12px;outline:none}input:focus,select:focus,textarea:focus{border-color:var(--accent2);box-shadow:0 0 0 3px rgba(76,154,106,.12)}textarea{min-height:88px;resize:vertical}.meta-box{display:flex;gap:14px;flex-wrap:wrap;width:100%;padding:10px 12px;color:#5b6470;background:#f4f5f6;border:1px solid #e1e4e7;border-radius:12px;font-size:12px}.hint{color:var(--muted);font-size:12px;line-height:1.45}
+    .priority-flow{display:grid;gap:12px}.priority-progress{color:var(--muted);font-size:12px;font-weight:700}.priority-card{padding:14px;background:#fbfdfc;border:1px solid var(--line);border-radius:14px}.priority-title{margin-bottom:10px;color:#34423a;font-size:14px;line-height:1.4;font-weight:700}.priority-options{display:flex;gap:10px;flex-wrap:wrap}.priority-option{min-width:94px;padding:10px 18px;color:#34423a;background:#fff;border:1px solid var(--line);border-radius:999px;font-weight:700;cursor:pointer}.priority-option:hover{background:#f3faf5;border-color:var(--accent2)}.priority-result{display:none;padding:14px 16px;border:1px solid var(--line);border-radius:14px;font-weight:700}.priority-result.visible{display:block}.priority-result.emergencial{color:#991b1b;background:#fee2e2;border-color:#fecaca}.priority-result.urgente{color:#9a3412;background:#ffedd5;border-color:#fed7aa}.priority-result.necessaria{color:#92400e;background:#fef3c7;border-color:#fde68a}.priority-result.programada{color:#166534;background:#dcfce7;border-color:#bbf7d0}.priority-reset{display:none;width:fit-content;padding:0;color:var(--accent);background:transparent;border:0;font-size:13px;font-weight:700;text-decoration:underline;cursor:pointer}.priority-reset.visible{display:inline-block}
+    .section-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:12px}.section-header h2{margin-bottom:4px}.btn{padding:11px 16px;border:0;border-radius:999px;font-weight:700;cursor:pointer}.btn-primary{color:#fff;background:var(--accent2);box-shadow:0 6px 14px rgba(76,154,106,.18)}.btn-secondary{color:#243128;background:#e5ebe7}.btn:disabled{opacity:.65;cursor:wait}.table-wrap{overflow:hidden;border:1px solid var(--line);border-radius:16px}table{width:100%;border-collapse:collapse;table-layout:fixed}th{padding:12px;color:#355043;background:#f3faf5;border-bottom:1px solid var(--line);text-align:left;font-size:13px}td{padding:10px 12px;background:#fff;border-bottom:1px solid #e4ebe6;vertical-align:top}tbody tr:last-child td{border-bottom:0}.col-qty{width:108px}.col-unit{width:150px}.col-action{width:108px}.item-input,.item-select,.item-textarea{width:100%;padding:10px;background:#fff;border:1px solid var(--line);border-radius:10px}.item-input{max-width:92px;text-align:right}.item-textarea{min-height:76px;resize:vertical}.remove-btn{width:100%;padding:10px 12px;color:var(--danger);background:#fff5f5;border:1px solid #f4c7c7;border-radius:10px;font-weight:700;cursor:pointer}.summary{margin-top:8px;color:var(--muted);font-size:12px}.footer-actions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+    @media(max-width:900px){.field,.field.company,.field.obra,.field.meta{grid-column:span 12}}
+    @media(max-width:768px){.header{flex-direction:column;align-items:flex-start}.content{padding:16px}.section{padding:16px}.table-wrap{overflow:visible;border:0}table,tbody,tr,td{display:block;width:100%}thead{display:none}tbody tr{margin-bottom:14px;overflow:hidden;border:1px solid var(--line);border-radius:16px}td::before{content:attr(data-label);display:block;margin-bottom:6px;color:#355043;font-size:12px;font-weight:700}.item-input{max-width:none;text-align:left}}
   </style>
 </head>
 <body>
@@ -127,37 +34,10 @@ SOLICITAÇÕES INCOMPLETAS OU INCORRETAS PODERÃO CAUSAR ATRASOS NA COMPRA. O SO
         <section class="section">
           <h2>Identificação da solicitação</h2>
           <div class="grid">
-            <div class="field company">
-              <label for="empresa">Empresa solicitante</label>
-              <select id="empresa" required>
-                <option value="">Selecione</option>
-                <option>Arflex</option>
-                <option>Arkad</option>
-                <option>Artop</option>
-                <option>Engenharia do Conforto</option>
-              </select>
-            </div>
-            <div class="field company">
-              <label for="solicitante">Solicitante</label>
-              <select id="solicitante" required>
-                <option value="">Selecione</option>
-                <option>João</option>
-                <option>Carlos</option>
-                <option>Pedro</option>
-                <option>Marcos</option>
-              </select>
-            </div>
-            <div class="field obra">
-              <label for="obra">Destino / Obra</label>
-              <input id="obra" type="text" maxlength="120" placeholder="Ex.: Obra Centro - Bloco A" required>
-            </div>
-            <div class="field meta">
-              <label>Data / Hora</label>
-              <div class="meta-box">
-                <span><strong>Data:</strong> <span id="dataTexto">--/--/----</span></span>
-                <span><strong>Hora:</strong> <span id="horaTexto">--:--</span></span>
-              </div>
-            </div>
+            <div class="field company"><label for="empresa">Empresa solicitante</label><select id="empresa" required><option value="">Selecione</option><option>Arflex</option><option>Arkad</option><option>Artop</option><option>Engenharia do Conforto</option></select></div>
+            <div class="field company"><label for="solicitante">Solicitante</label><select id="solicitante" required><option value="">Selecione</option><option>João</option><option>Carlos</option><option>Pedro</option><option>Marcos</option></select></div>
+            <div class="field obra"><label for="obra">Destino / Obra</label><input id="obra" type="text" maxlength="120" placeholder="Ex.: Obra Centro - Bloco A" required></div>
+            <div class="field meta"><label>Data / Hora</label><div class="meta-box"><span><strong>Data:</strong> <span id="dataTexto">--/--/----</span></span><span><strong>Hora:</strong> <span id="horaTexto">--:--</span></span></div></div>
           </div>
         </section>
 
@@ -166,277 +46,51 @@ SOLICITAÇÕES INCOMPLETAS OU INCORRETAS PODERÃO CAUSAR ATRASOS NA COMPRA. O SO
           <div class="hint" style="margin-bottom:14px">Responda às perguntas na ordem apresentada. A classificação será definida automaticamente.</div>
           <div class="priority-flow">
             <div id="priorityProgress" class="priority-progress"></div>
-            <div id="priorityCard" class="priority-card">
-              <div id="priorityQuestion" class="priority-title"></div>
-              <div class="priority-options">
-                <button type="button" class="priority-option" data-answer="sim">Sim</button>
-                <button type="button" class="priority-option" data-answer="nao">Não</button>
-              </div>
-            </div>
+            <div id="priorityCard" class="priority-card"><div id="priorityQuestion" class="priority-title"></div><div class="priority-options"><button type="button" class="priority-option" data-answer="sim">Sim</button><button type="button" class="priority-option" data-answer="nao">Não</button></div></div>
             <div id="priorityResult" class="priority-result" aria-live="polite"></div>
             <button type="button" id="priorityReset" class="priority-reset">Refazer classificação</button>
           </div>
         </section>
 
         <section class="section">
-          <div class="section-header">
-            <div>
-              <h2>Itens solicitados</h2>
-              <div class="hint">Uma nova linha pode ser adicionada pelo botão ao lado.</div>
-            </div>
-            <button type="button" id="addItem" class="btn btn-primary">+ Adicionar item</button>
-          </div>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th class="col-qty">Quantidade</th>
-                  <th class="col-unit">Unidade de medida</th>
-                  <th>Descrição</th>
-                  <th class="col-action">Ação</th>
-                </tr>
-              </thead>
-              <tbody id="itemsBody"></tbody>
-            </table>
-          </div>
+          <div class="section-header"><div><h2>Itens solicitados</h2><div class="hint">Uma nova linha pode ser adicionada pelo botão ao lado.</div></div><button type="button" id="addItem" class="btn btn-primary">+ Adicionar item</button></div>
+          <div class="table-wrap"><table><thead><tr><th class="col-qty">Quantidade</th><th class="col-unit">Unidade de medida</th><th>Descrição</th><th class="col-action">Ação</th></tr></thead><tbody id="itemsBody"></tbody></table></div>
           <div id="itemsSummary" class="summary">0 item adicionado.</div>
         </section>
 
-        <section class="section">
-          <h2>Observações gerais</h2>
-          <div class="field wide">
-            <label for="observacoes">Observações adicionais</label>
-            <textarea id="observacoes" placeholder="Informe aqui qualquer detalhe adicional relevante."></textarea>
-          </div>
-        </section>
-
-        <div class="footer-actions">
-          <button type="button" id="clearBtn" class="btn btn-secondary">Limpar tudo</button>
-          <button type="button" id="submitBtn" class="btn btn-primary">Salvar solicitação</button>
-        </div>
+        <section class="section"><h2>Observações gerais</h2><div class="field wide"><label for="observacoes">Observações adicionais</label><textarea id="observacoes" placeholder="Informe aqui qualquer detalhe adicional relevante."></textarea></div></section>
+        <div class="footer-actions"><button type="button" id="clearBtn" class="btn btn-secondary">Limpar tudo</button><button type="button" id="submitBtn" class="btn btn-primary">Salvar solicitação</button></div>
       </div>
     </div>
   </main>
 
-  <template id="itemTemplate">
-    <tr class="item-row">
-      <td data-label="Quantidade"><input class="item-input qty-input" type="number" min="1" max="9999" step="1" inputmode="numeric" placeholder="0"></td>
-      <td data-label="Unidade de medida">
-        <select class="item-select unit-input">
-          <option value="">Selecione</option>
-          <option>UN</option><option>m</option><option>m²</option><option>m³</option><option>kg</option><option>cx</option>
-          <option>litro</option><option>galão</option><option>kit</option><option>par</option><option>rolo</option><option>metro linear</option><option>outro</option>
-        </select>
-      </td>
-      <td data-label="Descrição"><textarea class="item-textarea desc-input" placeholder="Descreva o material com o máximo de detalhes possível."></textarea></td>
-      <td data-label="Ação"><button type="button" class="remove-btn">Remover</button></td>
-    </tr>
-  </template>
+  <template id="itemTemplate"><tr class="item-row"><td data-label="Quantidade"><input class="item-input qty-input" type="number" min="1" max="9999" step="1" inputmode="numeric" placeholder="0"></td><td data-label="Unidade de medida"><select class="item-select unit-input"><option value="">Selecione</option><option>UN</option><option>m</option><option>m²</option><option>m³</option><option>kg</option><option>cx</option><option>litro</option><option>galão</option><option>kit</option><option>par</option><option>rolo</option><option>metro linear</option><option>outro</option></select></td><td data-label="Descrição"><textarea class="item-textarea desc-input" placeholder="Descreva o material com o máximo de detalhes possível."></textarea></td><td data-label="Ação"><button type="button" class="remove-btn">Remover</button></td></tr></template>
+
+  <iframe id="submissionFrame" name="submissionFrame" hidden aria-hidden="true"></iframe>
+  <form id="submissionForm" method="POST" target="submissionFrame" hidden><input id="submissionPayload" type="hidden" name="payload" value=""></form>
 
   <script>
     'use strict';
-
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyNRYhvGD-SrkJ88d4WRS1pAEat5JPzafhP11SFCfMmGUOdmGARTn4rtRpEMhPjZx6t/exec';
-    const priorityQuestions = [
-      'A atividade já está parada ou parará hoje sem este item?',
-      'Se não for atendida em até 1 dia útil, haverá atraso no cronograma, descumprimento contratual ou retrabalho?',
-      'A necessidade ocorrerá em menos de 5 dias úteis?'
-    ];
-
-    const el = {
-      logo: document.getElementById('logoPreview'),
-      logoPlaceholder: document.getElementById('logoPlaceholder'),
-      empresa: document.getElementById('empresa'),
-      solicitante: document.getElementById('solicitante'),
-      obra: document.getElementById('obra'),
-      data: document.getElementById('dataTexto'),
-      hora: document.getElementById('horaTexto'),
-      progress: document.getElementById('priorityProgress'),
-      priorityCard: document.getElementById('priorityCard'),
-      priorityQuestion: document.getElementById('priorityQuestion'),
-      priorityResult: document.getElementById('priorityResult'),
-      priorityReset: document.getElementById('priorityReset'),
-      priorityButtons: Array.from(document.querySelectorAll('.priority-option')),
-      itemsBody: document.getElementById('itemsBody'),
-      itemTemplate: document.getElementById('itemTemplate'),
-      itemsSummary: document.getElementById('itemsSummary'),
-      addItem: document.getElementById('addItem'),
-      observacoes: document.getElementById('observacoes'),
-      clearBtn: document.getElementById('clearBtn'),
-      submitBtn: document.getElementById('submitBtn')
-    };
-
-    let prioridade = '';
-    let priorityStep = 0;
-
-    function pad(value) { return String(value).padStart(2, '0'); }
-
-    function setDateTime() {
-      const now = new Date();
-      el.data.textContent = `${pad(now.getDate())}/${pad(now.getMonth() + 1)}/${now.getFullYear()}`;
-      el.hora.textContent = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
-    }
-
-    function renderPriority() {
-      el.progress.textContent = `Pergunta ${priorityStep + 1}`;
-      el.priorityQuestion.textContent = `${priorityStep + 1}. ${priorityQuestions[priorityStep]}`;
-      el.priorityCard.hidden = false;
-      el.progress.hidden = false;
-      el.priorityResult.className = 'priority-result';
-      el.priorityReset.classList.remove('visible');
-    }
-
-    function finishPriority(value) {
-      prioridade = value;
-      el.priorityCard.hidden = true;
-      el.progress.hidden = true;
-      el.priorityResult.textContent = `Classificação definida: ${value}`;
-      const cssClass = value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-      el.priorityResult.className = `priority-result visible ${cssClass}`;
-      el.priorityReset.classList.add('visible');
-    }
-
-    function answerPriority(answer) {
-      if (priorityStep === 0) {
-        if (answer === 'sim') return finishPriority('Emergencial');
-        priorityStep = 1;
-        return renderPriority();
-      }
-      if (priorityStep === 1) {
-        if (answer === 'sim') return finishPriority('Urgente');
-        priorityStep = 2;
-        return renderPriority();
-      }
-      finishPriority(answer === 'sim' ? 'Necessária' : 'Programada');
-    }
-
-    function resetPriority() {
-      prioridade = '';
-      priorityStep = 0;
-      renderPriority();
-    }
-
-    function updateItemSummary() {
-      const count = el.itemsBody.querySelectorAll('.item-row').length;
-      el.itemsSummary.textContent = count === 1 ? '1 item adicionado.' : `${count} itens adicionados.`;
-    }
-
-    function addItem(focus = false) {
-      const fragment = el.itemTemplate.content.cloneNode(true);
-      const row = fragment.querySelector('.item-row');
-      const qty = row.querySelector('.qty-input');
-      const remove = row.querySelector('.remove-btn');
-
-      qty.addEventListener('input', () => {
-        if (qty.value.length > 4) qty.value = qty.value.slice(0, 4);
-      });
-
-      remove.addEventListener('click', () => {
-        const rows = el.itemsBody.querySelectorAll('.item-row');
-        if (rows.length === 1) {
-          row.querySelectorAll('input, textarea').forEach((input) => { input.value = ''; });
-          row.querySelector('select').value = '';
-        } else {
-          row.remove();
-          updateItemSummary();
-        }
-      });
-
-      el.itemsBody.appendChild(fragment);
-      updateItemSummary();
-      if (focus) setTimeout(() => qty.focus(), 0);
-    }
-
-    function collectItems() {
-      return Array.from(el.itemsBody.querySelectorAll('.item-row')).map((row) => ({
-        quantidade: row.querySelector('.qty-input').value.trim(),
-        unidade: row.querySelector('.unit-input').value.trim(),
-        descricao: row.querySelector('.desc-input').value.trim()
-      })).filter((item) => item.quantidade || item.unidade || item.descricao);
-    }
-
-    function collectData() {
-      return {
-        empresa: el.empresa.value.trim(),
-        solicitante: el.solicitante.value.trim(),
-        obra: el.obra.value.trim(),
-        data: el.data.textContent,
-        hora: el.hora.textContent,
-        prioridade,
-        observacoes: el.observacoes.value.trim(),
-        itens: collectItems()
-      };
-    }
-
-    function validate(data) {
-      if (!data.empresa) return 'Selecione a empresa solicitante.';
-      if (!data.solicitante) return 'Selecione o solicitante.';
-      if (!data.obra) return 'Informe o destino / obra.';
-      if (!data.prioridade) return 'Responda às perguntas para definir a prioridade.';
-      if (!data.itens.length) return 'Adicione pelo menos um item.';
-      for (let index = 0; index < data.itens.length; index += 1) {
-        const item = data.itens[index];
-        if (!item.quantidade || Number(item.quantidade) <= 0) return `Informe uma quantidade válida no item ${index + 1}.`;
-        if (!item.unidade) return `Selecione a unidade do item ${index + 1}.`;
-        if (!item.descricao) return `Informe a descrição do item ${index + 1}.`;
-      }
-      return '';
-    }
-
-    function clearAll() {
-      el.empresa.value = '';
-      el.solicitante.value = '';
-      el.obra.value = '';
-      el.observacoes.value = '';
-      el.itemsBody.innerHTML = '';
-      addItem();
-      resetPriority();
-      setDateTime();
-    }
-
-    async function submitRequest() {
-      const data = collectData();
-      const error = validate(data);
-      if (error) {
-        alert(error);
-        return;
-      }
-
-      el.submitBtn.disabled = true;
-      el.submitBtn.textContent = 'Enviando...';
-
-      try {
-        await fetch(SCRIPT_URL, {
-          method: 'POST',
-          mode: 'no-cors',
-          credentials: 'omit',
-          redirect: 'follow',
-          body: JSON.stringify(data)
-        });
-        alert(`Solicitação enviada com sucesso!\nPrioridade: ${data.prioridade}`);
-        clearAll();
-      } catch (error) {
-        console.error(error);
-        alert('Não foi possível enviar a solicitação. Verifique a conexão e tente novamente.');
-      } finally {
-        el.submitBtn.disabled = false;
-        el.submitBtn.textContent = 'Salvar solicitação';
-      }
-    }
-
-    el.logo.addEventListener('error', () => {
-      el.logo.style.display = 'none';
-      el.logoPlaceholder.style.display = 'block';
-    });
-    el.priorityButtons.forEach((button) => button.addEventListener('click', () => answerPriority(button.dataset.answer)));
-    el.priorityReset.addEventListener('click', resetPriority);
-    el.addItem.addEventListener('click', () => addItem(true));
-    el.clearBtn.addEventListener('click', clearAll);
-    el.submitBtn.addEventListener('click', submitRequest);
-
-    setDateTime();
-    resetPriority();
-    addItem();
+    const SCRIPT_URL='https://script.google.com/macros/s/AKfycbyNRYhvGD-SrkJ88d4WRS1pAEat5JPzafhP11SFCfMmGUOdmGARTn4rtRpEMhPjZx6t/exec';
+    const questions=['A atividade já está parada ou parará hoje sem este item?','Se não for atendida em até 1 dia útil, haverá atraso no cronograma, descumprimento contratual ou retrabalho?','A necessidade ocorrerá em menos de 5 dias úteis?'];
+    const el={logo:document.getElementById('logoPreview'),logoPlaceholder:document.getElementById('logoPlaceholder'),empresa:document.getElementById('empresa'),solicitante:document.getElementById('solicitante'),obra:document.getElementById('obra'),data:document.getElementById('dataTexto'),hora:document.getElementById('horaTexto'),progress:document.getElementById('priorityProgress'),priorityCard:document.getElementById('priorityCard'),priorityQuestion:document.getElementById('priorityQuestion'),priorityResult:document.getElementById('priorityResult'),priorityReset:document.getElementById('priorityReset'),priorityButtons:Array.from(document.querySelectorAll('.priority-option')),itemsBody:document.getElementById('itemsBody'),itemTemplate:document.getElementById('itemTemplate'),itemsSummary:document.getElementById('itemsSummary'),addItem:document.getElementById('addItem'),observacoes:document.getElementById('observacoes'),clearBtn:document.getElementById('clearBtn'),submitBtn:document.getElementById('submitBtn'),submissionForm:document.getElementById('submissionForm'),submissionPayload:document.getElementById('submissionPayload')};
+    let prioridade='',step=0,pendingToken='',timeoutId=null;
+    const pad=v=>String(v).padStart(2,'0');
+    function setDateTime(){const now=new Date();el.data.textContent=`${pad(now.getDate())}/${pad(now.getMonth()+1)}/${now.getFullYear()}`;el.hora.textContent=`${pad(now.getHours())}:${pad(now.getMinutes())}`}
+    function renderPriority(){el.progress.textContent=`Pergunta ${step+1}`;el.priorityQuestion.textContent=`${step+1}. ${questions[step]}`;el.priorityCard.hidden=false;el.progress.hidden=false;el.priorityResult.className='priority-result';el.priorityReset.classList.remove('visible')}
+    function finishPriority(value){prioridade=value;el.priorityCard.hidden=true;el.progress.hidden=true;el.priorityResult.textContent=`Classificação definida: ${value}`;const cls=value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');el.priorityResult.className=`priority-result visible ${cls}`;el.priorityReset.classList.add('visible')}
+    function answerPriority(answer){if(step===0){if(answer==='sim')return finishPriority('Emergencial');step=1;return renderPriority()}if(step===1){if(answer==='sim')return finishPriority('Urgente');step=2;return renderPriority()}finishPriority(answer==='sim'?'Necessária':'Programada')}
+    function resetPriority(){prioridade='';step=0;renderPriority()}
+    function updateSummary(){const count=el.itemsBody.querySelectorAll('.item-row').length;el.itemsSummary.textContent=count===1?'1 item adicionado.':`${count} itens adicionados.`}
+    function addItem(focus=false){const fragment=el.itemTemplate.content.cloneNode(true),row=fragment.querySelector('.item-row'),qty=row.querySelector('.qty-input'),remove=row.querySelector('.remove-btn');qty.addEventListener('input',()=>{if(qty.value.length>4)qty.value=qty.value.slice(0,4)});remove.addEventListener('click',()=>{const rows=el.itemsBody.querySelectorAll('.item-row');if(rows.length===1){row.querySelectorAll('input,textarea').forEach(i=>i.value='');row.querySelector('select').value=''}else{row.remove();updateSummary()}});el.itemsBody.appendChild(fragment);updateSummary();if(focus)setTimeout(()=>qty.focus(),0)}
+    function collectItems(){return Array.from(el.itemsBody.querySelectorAll('.item-row')).map(row=>({quantidade:row.querySelector('.qty-input').value.trim(),unidade:row.querySelector('.unit-input').value.trim(),descricao:row.querySelector('.desc-input').value.trim()})).filter(item=>item.quantidade||item.unidade||item.descricao)}
+    function collectData(){return{empresa:el.empresa.value.trim(),solicitante:el.solicitante.value.trim(),obra:el.obra.value.trim(),data:el.data.textContent,hora:el.hora.textContent,prioridade,observacoes:el.observacoes.value.trim(),itens:collectItems()}}
+    function validate(data){if(!data.empresa)return'Selecione a empresa solicitante.';if(!data.solicitante)return'Selecione o solicitante.';if(!data.obra)return'Informe o destino / obra.';if(!data.prioridade)return'Responda às perguntas para definir a prioridade.';if(!data.itens.length)return'Adicione pelo menos um item.';for(let i=0;i<data.itens.length;i+=1){const item=data.itens[i];if(!item.quantidade||Number(item.quantidade)<=0)return`Informe uma quantidade válida no item ${i+1}.`;if(!item.unidade)return`Selecione a unidade do item ${i+1}.`;if(!item.descricao)return`Informe a descrição do item ${i+1}.`}return''}
+    function clearAll(){el.empresa.value='';el.solicitante.value='';el.obra.value='';el.observacoes.value='';el.itemsBody.innerHTML='';addItem();resetPriority();setDateTime()}
+    function restoreButton(){el.submitBtn.disabled=false;el.submitBtn.textContent='Salvar solicitação'}
+    window.addEventListener('message',event=>{const response=event.data;if(!response||response.source!=='requisicao-app'||!pendingToken||response.token!==pendingToken)return;if(timeoutId){clearTimeout(timeoutId);timeoutId=null}pendingToken='';restoreButton();if(response.ok){alert(`Solicitação enviada com sucesso!\nPrioridade: ${response.prioridade}`);clearAll()}else{alert(`Não foi possível salvar a solicitação.\n${response.erro||'Erro não identificado.'}`)}});
+    function submit(){const data=collectData(),error=validate(data);if(error){alert(error);return}if(pendingToken)return;pendingToken=`${Date.now()}-${Math.random().toString(36).slice(2,10)}`;data.token=pendingToken;el.submissionPayload.value=JSON.stringify(data);el.submissionForm.action=SCRIPT_URL;el.submitBtn.disabled=true;el.submitBtn.textContent='Enviando...';timeoutId=setTimeout(()=>{pendingToken='';restoreButton();alert('O servidor não confirmou o envio. Verifique o Apps Script e tente novamente.')},30000);el.submissionForm.submit()}
+    el.logo.addEventListener('error',()=>{el.logo.style.display='none';el.logoPlaceholder.style.display='block'});el.priorityButtons.forEach(button=>button.addEventListener('click',()=>answerPriority(button.dataset.answer)));el.priorityReset.addEventListener('click',resetPriority);el.addItem.addEventListener('click',()=>addItem(true));el.clearBtn.addEventListener('click',clearAll);el.submitBtn.addEventListener('click',submit);setDateTime();resetPriority();addItem();
   </script>
 </body>
 </html>
