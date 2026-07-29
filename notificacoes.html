@@ -18,18 +18,41 @@
       --radius: 18px;
       --shadow: 0 10px 28px rgba(30, 41, 59, 0.10);
     }
+
     * { box-sizing: border-box; }
     html, body { margin: 0; padding: 0; }
-    body { min-height: 100vh; padding: 24px 14px; background: linear-gradient(180deg, #eef8f1 0%, var(--bg) 100%); color: var(--text); font-family: Calibri, Arial, sans-serif; }
+    body {
+      min-height: 100vh;
+      padding: 24px 14px;
+      background: linear-gradient(180deg, #eef8f1 0%, var(--bg) 100%);
+      color: var(--text);
+      font-family: Calibri, Arial, sans-serif;
+    }
+
     button, input { font: inherit; }
-    .container { width: min(720px, 100%); margin: 0 auto; }
-    .card { padding: 24px; background: var(--card); border: 1px solid rgba(76, 154, 106, 0.18); border-radius: var(--radius); box-shadow: var(--shadow); }
+    .container { width: min(760px, 100%); margin: 0 auto; }
+    .card {
+      padding: 24px;
+      background: var(--card);
+      border: 1px solid rgba(76, 154, 106, 0.18);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
     h1 { margin: 0 0 8px; color: var(--accent); font-size: 26px; }
     p { margin: 0; line-height: 1.5; }
     .intro { margin-bottom: 22px; color: var(--muted); }
     .field { display: grid; gap: 6px; margin-bottom: 16px; }
     label { font-size: 13px; font-weight: 700; color: #34423a; }
-    input { width: 100%; padding: 12px 13px; color: var(--text); background: #fff; border: 1px solid var(--line); border-radius: 12px; outline: none; }
+    input {
+      width: 100%;
+      padding: 12px 13px;
+      color: var(--text);
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      outline: none;
+    }
     input:focus { border-color: var(--accent-2); box-shadow: 0 0 0 3px rgba(76,154,106,.12); }
     .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
     .btn { padding: 11px 16px; border: 0; border-radius: 999px; font-weight: 700; cursor: pointer; }
@@ -37,13 +60,31 @@
     .btn-secondary { color: #243128; background: #e5ebe7; }
     .btn-danger { color: #fff; background: var(--danger); }
     .btn:disabled { opacity: .62; cursor: wait; }
-    .status { display: none; margin-top: 20px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 14px; line-height: 1.45; white-space: pre-line; }
+    .status {
+      display: none;
+      margin-top: 20px;
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      line-height: 1.45;
+      white-space: pre-line;
+    }
     .status.visible { display: block; }
     .status.success { color: #166534; background: #dcfce7; border-color: #bbf7d0; }
     .status.error { color: #991b1b; background: #fee2e2; border-color: #fecaca; }
     .status.warning { color: var(--warning); background: #fef3c7; border-color: #fde68a; }
-    .details { margin-top: 22px; padding: 16px; color: var(--muted); background: #f8faf9; border: 1px solid var(--line); border-radius: 14px; font-size: 13px; line-height: 1.5; }
+    .details {
+      margin-top: 22px;
+      padding: 16px;
+      color: var(--muted);
+      background: #f8faf9;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      font-size: 13px;
+      line-height: 1.55;
+    }
     .device-state { margin-top: 8px; font-weight: 700; color: #34423a; }
+    .diagnostics { margin-top: 8px; white-space: pre-line; }
   </style>
 </head>
 <body>
@@ -51,36 +92,47 @@
     <section class="card">
       <h1>Notificações de Compras</h1>
       <p class="intro">Ative neste dispositivo os avisos de novas solicitações. O e-mail continuará sendo enviado normalmente.</p>
+
       <div class="field">
         <label for="deviceName">Nome deste dispositivo</label>
-        <input id="deviceName" type="text" maxlength="80" placeholder="Ex.: Computador do setor de Compras">
+        <input id="deviceName" type="text" maxlength="80" autocomplete="off" placeholder="Ex.: Computador do setor de Compras">
       </div>
+
       <div class="field">
         <label for="activationKey">Chave de ativação</label>
         <input id="activationKey" type="password" autocomplete="current-password" placeholder="Informe a chave definida no Apps Script">
       </div>
+
       <div class="actions">
         <button id="enableBtn" class="btn btn-primary" type="button">Ativar notificações</button>
-        <button id="testBtn" class="btn btn-secondary" type="button">Enviar teste</button>
+        <button id="localTestBtn" class="btn btn-secondary" type="button">Testar navegador</button>
+        <button id="firebaseTestBtn" class="btn btn-secondary" type="button">Testar via Firebase</button>
         <button id="disableBtn" class="btn btn-danger" type="button">Desativar neste dispositivo</button>
       </div>
+
       <div id="status" class="status" role="status" aria-live="polite"></div>
+
       <div class="details">
-        <strong>Requisitos:</strong> use o Chrome ou outro navegador compatível, permita notificações quando solicitado e mantenha as notificações habilitadas no sistema operacional.
+        <strong>Diagnóstico do dispositivo</strong>
         <div id="deviceState" class="device-state">Verificando este dispositivo...</div>
+        <div id="diagnostics" class="diagnostics"></div>
       </div>
     </section>
   </main>
+
   <iframe id="submissionFrame" name="notificationSubmissionFrame" hidden aria-hidden="true"></iframe>
   <form id="submissionForm" method="POST" target="notificationSubmissionFrame" hidden>
     <input id="submissionPayload" type="hidden" name="payload" value="">
   </form>
+
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js';
     import { getMessaging, getToken, deleteToken, onMessage, isSupported } from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-messaging.js';
 
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyNRYhvGD-SrkJ88d4WRS1pAEat5JPzafhP11SFCfMmGUOdmGARTn4rtRpEMhPjZx6t/exec';
     const VAPID_PUBLIC_KEY = 'BMj0lQlF7lllqju9HyT2p6OTgk2II2MsOkG4EFBqkEpszlpcFZrPos0ilZ85vrAPNJCj81e57dZUMJK8JaTQhUA';
+    const ICON_URL = 'https://comprasarflex.github.io/Compras/135927287_448584936583178_5622652680214904709_n.jpg';
+
     const firebaseConfig = {
       apiKey: 'AIzaSyDhCsyprLYGe7PrBre9PR7liJOJ6QFF7wk',
       authDomain: 'requisicao-de-compras.firebaseapp.com',
@@ -94,10 +146,12 @@
       deviceName: document.getElementById('deviceName'),
       activationKey: document.getElementById('activationKey'),
       enableBtn: document.getElementById('enableBtn'),
-      testBtn: document.getElementById('testBtn'),
+      localTestBtn: document.getElementById('localTestBtn'),
+      firebaseTestBtn: document.getElementById('firebaseTestBtn'),
       disableBtn: document.getElementById('disableBtn'),
       status: document.getElementById('status'),
       deviceState: document.getElementById('deviceState'),
+      diagnostics: document.getElementById('diagnostics'),
       submissionForm: document.getElementById('submissionForm'),
       submissionPayload: document.getElementById('submissionPayload')
     };
@@ -106,38 +160,50 @@
     let serviceWorkerRegistration = null;
     let currentToken = localStorage.getItem('fcmRegistrationToken') || '';
     let pending = null;
+    let firebaseReady = false;
 
     function setStatus(message, type = 'warning') {
       el.status.textContent = message;
       el.status.className = `status visible ${type}`;
     }
+
     function setBusy(isBusy) {
-      [el.enableBtn, el.testBtn, el.disableBtn].forEach((button) => { button.disabled = isBusy; });
+      [el.enableBtn, el.localTestBtn, el.firebaseTestBtn, el.disableBtn]
+        .forEach((button) => { button.disabled = isBusy; });
     }
+
     function updateDeviceState() {
-      if (Notification.permission === 'denied') {
-        el.deviceState.textContent = 'Notificações bloqueadas neste navegador.';
-      } else if (currentToken) {
-        el.deviceState.textContent = 'Este dispositivo possui uma inscrição ativa.';
-      } else {
-        el.deviceState.textContent = 'Este dispositivo ainda não foi ativado.';
-      }
+      const permission = typeof Notification === 'undefined' ? 'indisponível' : Notification.permission;
+      el.deviceState.textContent = currentToken
+        ? 'Este dispositivo possui uma inscrição FCM ativa.'
+        : 'Este dispositivo ainda não possui uma inscrição FCM ativa.';
+
+      el.diagnostics.textContent = [
+        `Permissão do navegador: ${permission}`,
+        `Service worker: ${serviceWorkerRegistration ? 'ativo' : 'não inicializado'}`,
+        `Firebase Messaging: ${firebaseReady ? 'ativo' : 'não inicializado'}`,
+        `Token armazenado: ${currentToken ? 'sim' : 'não'}`
+      ].join('\n');
     }
+
     function requireFields({ requireToken = false } = {}) {
       const activationKey = el.activationKey.value.trim();
       if (!activationKey) throw new Error('Informe a chave de ativação.');
       if (requireToken && !currentToken) throw new Error('Ative as notificações neste dispositivo primeiro.');
       return activationKey;
     }
+
     function postToAppsScript(payload) {
       if (pending) throw new Error('Já existe uma operação em andamento.');
+
       return new Promise((resolve, reject) => {
-        const token = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-        pending = { token, resolve, reject };
-        payload.tokenResposta = token;
+        const responseToken = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+        pending = { token: responseToken, resolve, reject, timeout: null };
+        payload.tokenResposta = responseToken;
         el.submissionPayload.value = JSON.stringify(payload);
         el.submissionForm.action = SCRIPT_URL;
         el.submissionForm.submit();
+
         pending.timeout = window.setTimeout(() => {
           const operation = pending;
           pending = null;
@@ -145,46 +211,109 @@
         }, 30000);
       });
     }
+
     window.addEventListener('message', (event) => {
       const response = event.data;
       if (!pending || !response || response.source !== 'requisicao-app') return;
       if (response.token !== pending.token) return;
+
       window.clearTimeout(pending.timeout);
       const operation = pending;
       pending = null;
+
       if (response.ok) operation.resolve(response);
       else operation.reject(new Error(response.erro || 'O servidor recusou a operação.'));
     });
-    async function initializeMessaging() {
-      const supported = await isSupported();
-      if (!supported) throw new Error('Este navegador não oferece suporte às notificações Web Push do Firebase.');
-      serviceWorkerRegistration = await navigator.serviceWorker.register('./firebase-messaging-sw.js', { scope: './' });
-      await navigator.serviceWorker.ready;
-      const app = initializeApp(firebaseConfig);
-      messaging = getMessaging(app);
-      onMessage(messaging, (payload) => {
-        const title = payload.data?.title || payload.notification?.title || 'Nova solicitação de compra';
-        const body = payload.data?.body || payload.notification?.body || 'Uma nova solicitação foi registrada.';
-        if (Notification.permission === 'granted') {
-          new Notification(title, { body, icon: './135927287_448584936583178_5622652680214904709_n.jpg' });
+
+    async function showNotification(title, body, data = {}) {
+      if (Notification.permission !== 'granted') {
+        throw new Error('O navegador não possui permissão para exibir notificações.');
+      }
+      if (!serviceWorkerRegistration) {
+        throw new Error('O service worker ainda não está ativo.');
+      }
+
+      await serviceWorkerRegistration.showNotification(title, {
+        body,
+        icon: ICON_URL,
+        badge: ICON_URL,
+        tag: data.requestId ? `requisicao-${data.requestId}` : `teste-${Date.now()}`,
+        renotify: true,
+        data: {
+          url: data.url || 'https://comprasarflex.github.io/Compras/notificacoes.html',
+          requestId: data.requestId || ''
         }
       });
     }
+
+    async function initializeMessaging() {
+      const supported = await isSupported();
+      if (!supported) {
+        throw new Error('Este navegador não oferece suporte às notificações Web Push do Firebase.');
+      }
+
+      serviceWorkerRegistration = await navigator.serviceWorker.register(
+        './firebase-messaging-sw.js',
+        { scope: './', updateViaCache: 'none' }
+      );
+      await serviceWorkerRegistration.update();
+      await navigator.serviceWorker.ready;
+
+      const app = initializeApp(firebaseConfig);
+      messaging = getMessaging(app);
+      firebaseReady = true;
+
+      onMessage(messaging, async (payload) => {
+        const title = payload.notification?.title || payload.data?.title || 'Nova solicitação de compra';
+        const body = payload.notification?.body || payload.data?.body || 'Uma nova solicitação foi registrada.';
+
+        try {
+          await showNotification(title, body, payload.data || {});
+          setStatus('Mensagem recebida do Firebase e exibida pelo navegador.', 'success');
+        } catch (error) {
+          console.error(error);
+          setStatus(`O Firebase entregou a mensagem, mas o navegador não conseguiu exibi-la.\n${error.message}`, 'error');
+        }
+      });
+
+      updateDeviceState();
+    }
+
     async function obtainRegistrationToken() {
       const permission = await Notification.requestPermission();
-      if (permission !== 'granted') throw new Error('A permissão para notificações não foi concedida.');
-      const token = await getToken(messaging, { vapidKey: VAPID_PUBLIC_KEY, serviceWorkerRegistration });
+      updateDeviceState();
+
+      if (permission !== 'granted') {
+        throw new Error('A permissão para notificações não foi concedida.');
+      }
+
+      const token = await getToken(messaging, {
+        vapidKey: VAPID_PUBLIC_KEY,
+        serviceWorkerRegistration
+      });
+
       if (!token) throw new Error('O Firebase não forneceu um token para este dispositivo.');
       return token;
     }
+
     async function enableNotifications() {
       setBusy(true);
       setStatus('Ativando notificações neste dispositivo...', 'warning');
+
       try {
+        if (!firebaseReady) throw new Error('O Firebase ainda não foi inicializado. Atualize a página e tente novamente.');
         const activationKey = requireFields();
         const deviceName = el.deviceName.value.trim() || 'Dispositivo sem nome';
         const fcmToken = await obtainRegistrationToken();
-        await postToAppsScript({ acao: 'registrarDispositivo', chave: activationKey, nomeDispositivo: deviceName, fcmToken, userAgent: navigator.userAgent });
+
+        await postToAppsScript({
+          acao: 'registrarDispositivo',
+          chave: activationKey,
+          nomeDispositivo: deviceName,
+          fcmToken,
+          userAgent: navigator.userAgent
+        });
+
         currentToken = fcmToken;
         localStorage.setItem('fcmRegistrationToken', currentToken);
         localStorage.setItem('notificationDeviceName', deviceName);
@@ -193,26 +322,72 @@
       } catch (error) {
         console.error(error);
         setStatus(error.message, 'error');
-      } finally { setBusy(false); }
+      } finally {
+        setBusy(false);
+      }
     }
-    async function sendTest() {
+
+    async function runLocalTest() {
       setBusy(true);
-      setStatus('Enviando uma notificação de teste...', 'warning');
+      setStatus('Executando teste local do navegador...', 'warning');
+
       try {
-        const activationKey = requireFields({ requireToken: true });
-        await postToAppsScript({ acao: 'testarNotificacao', chave: activationKey, fcmToken: currentToken });
-        setStatus('Teste enviado. A notificação pode levar alguns segundos para aparecer.', 'success');
+        if (Notification.permission !== 'granted') {
+          const permission = await Notification.requestPermission();
+          if (permission !== 'granted') throw new Error('A permissão para notificações não foi concedida.');
+        }
+
+        await showNotification(
+          'Teste local de notificações',
+          'O Chrome e o sistema operacional conseguem exibir avisos deste site.',
+          { requestId: `local-${Date.now()}` }
+        );
+        setStatus('Teste local solicitado. A notificação deve aparecer imediatamente.', 'success');
       } catch (error) {
         console.error(error);
         setStatus(error.message, 'error');
-      } finally { setBusy(false); }
+      } finally {
+        setBusy(false);
+        updateDeviceState();
+      }
     }
+
+    async function runFirebaseTest() {
+      setBusy(true);
+      setStatus('Enviando teste pelo Firebase...', 'warning');
+
+      try {
+        const activationKey = requireFields({ requireToken: true });
+        const response = await postToAppsScript({
+          acao: 'testarNotificacao',
+          chave: activationKey,
+          fcmToken: currentToken
+        });
+
+        setStatus(
+          `O Firebase aceitou a mensagem. Aguarde alguns segundos.\nID: ${response.messageId || 'não informado'}`,
+          'success'
+        );
+      } catch (error) {
+        console.error(error);
+        setStatus(error.message, 'error');
+      } finally {
+        setBusy(false);
+      }
+    }
+
     async function disableNotifications() {
       setBusy(true);
       setStatus('Desativando notificações neste dispositivo...', 'warning');
+
       try {
         const activationKey = requireFields({ requireToken: true });
-        await postToAppsScript({ acao: 'removerDispositivo', chave: activationKey, fcmToken: currentToken });
+        await postToAppsScript({
+          acao: 'removerDispositivo',
+          chave: activationKey,
+          fcmToken: currentToken
+        });
+
         await deleteToken(messaging);
         currentToken = '';
         localStorage.removeItem('fcmRegistrationToken');
@@ -221,19 +396,25 @@
       } catch (error) {
         console.error(error);
         setStatus(error.message, 'error');
-      } finally { setBusy(false); }
+      } finally {
+        setBusy(false);
+      }
     }
 
     el.enableBtn.addEventListener('click', enableNotifications);
-    el.testBtn.addEventListener('click', sendTest);
+    el.localTestBtn.addEventListener('click', runLocalTest);
+    el.firebaseTestBtn.addEventListener('click', runFirebaseTest);
     el.disableBtn.addEventListener('click', disableNotifications);
+
     const savedDeviceName = localStorage.getItem('notificationDeviceName');
     if (savedDeviceName) el.deviceName.value = savedDeviceName;
+
     updateDeviceState();
     initializeMessaging().catch((error) => {
       console.error(error);
       setStatus(error.message, 'error');
-      setBusy(true);
+      firebaseReady = false;
+      updateDeviceState();
     });
   </script>
 </body>
