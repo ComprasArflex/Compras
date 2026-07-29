@@ -1,3 +1,24 @@
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+
+  const notificationData = event.notification.data || {};
+  const fcmMessage = notificationData.FCM_MSG || {};
+  const fcmOptions = fcmMessage.fcmOptions || {};
+  const targetUrl = notificationData.url || fcmOptions.link || 'https://comprasarflex.github.io/Compras/notificacoes.html';
+
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if ('focus' in client && client.url.startsWith('https://comprasarflex.github.io/Compras/')) {
+          client.navigate(targetUrl);
+          return client.focus();
+        }
+      }
+      return clients.openWindow ? clients.openWindow(targetUrl) : undefined;
+    })
+  );
+});
+
 importScripts('https://www.gstatic.com/firebasejs/12.16.0/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/12.16.0/firebase-messaging-compat.js');
 
@@ -10,36 +31,4 @@ firebase.initializeApp({
   appId: '1:741013348079:web:3f377a205d44138b91451a'
 });
 
-const messaging = firebase.messaging();
-
-messaging.onBackgroundMessage((payload) => {
-  const data = payload.data || {};
-  const title = data.title || 'Nova solicitação de compra';
-  const options = {
-    body: data.body || 'Uma nova solicitação foi registrada.',
-    icon: './135927287_448584936583178_5622652680214904709_n.jpg',
-    badge: './135927287_448584936583178_5622652680214904709_n.jpg',
-    tag: data.requestId ? `requisicao-${data.requestId}` : 'nova-requisicao',
-    renotify: true,
-    data: {
-      url: data.url || './notificacoes.html',
-      requestId: data.requestId || ''
-    }
-  };
-
-  return self.registration.showNotification(title, options);
-});
-
-self.addEventListener('notificationclick', (event) => {
-  event.notification.close();
-  const targetUrl = new URL(event.notification.data?.url || './notificacoes.html', self.registration.scope).href;
-
-  event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-      for (const client of clientList) {
-        if (client.url === targetUrl && 'focus' in client) return client.focus();
-      }
-      return clients.openWindow ? clients.openWindow(targetUrl) : undefined;
-    })
-  );
-});
+firebase.messaging();
