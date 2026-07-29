@@ -928,22 +928,21 @@ SOLICITAÇÕES INCOMPLETAS OU INCORRETAS PODERÃO CAUSAR ATRASOS NA COMPRA. O SO
         return;
       }
 
-      fetch(SCRIPT_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-      })
-        .then(() => {
-          alert(`Solicitação enviada com sucesso!\nPrioridade: ${data.prioridade}`);
-          clearAll();
-        })
-        .catch(() => {
-          alert('Erro ao enviar a solicitação. Verifique a conexão.');
-        });
-    });
+     fetch(SCRIPT_URL, {
+  method: 'POST',
+  mode: 'no-cors',
+  headers: {
+    'Content-Type': 'text/plain;charset=utf-8'
+  },
+  body: JSON.stringify(data)
+})
+  .then(() => {
+    alert(`Solicitação enviada com sucesso!\nPrioridade: ${data.prioridade}`);
+    clearAll();
+  })
+  .catch(() => {
+    alert('Erro ao enviar a solicitação. Verifique a conexão.');
+  });
 
     setDateTimeNow();
     resetPriority();
