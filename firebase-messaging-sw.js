@@ -1,9 +1,10 @@
-const APP_CACHE = 'compras-app-v3';
+const APP_CACHE = 'compras-app-v4';
 const APP_SHELL = [
   './',
   './requisicao-v2.html',
   './notificacoes.html',
   './foreground-notifications.js',
+  './mobile-form-fixes.js',
   './135927287_448584936583178_5622652680214904709_n.jpg'
 ];
 
@@ -23,12 +24,16 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-function injectForegroundNotifications(html) {
-  if (html.includes('foreground-notifications.js')) return html;
-  return html.replace(
-    '</body>',
-    '<script type="module" src="./foreground-notifications.js"></script></body>'
-  );
+function injectPageModules(html) {
+  const scripts = [];
+  if (!html.includes('foreground-notifications.js')) {
+    scripts.push('<script type="module" src="./foreground-notifications.js"></script>');
+  }
+  if (!html.includes('mobile-form-fixes.js')) {
+    scripts.push('<script type="module" src="./mobile-form-fixes.js"></script>');
+  }
+  if (!scripts.length) return html;
+  return html.replace('</body>', `${scripts.join('')}</body>`);
 }
 
 async function responseForRequest(request) {
@@ -39,11 +44,13 @@ async function responseForRequest(request) {
     const networkResponse = await fetch(request);
 
     if (isAuthenticatedPage && networkResponse.ok) {
-      const html = injectForegroundNotifications(await networkResponse.text());
+      const html = injectPageModules(await networkResponse.text());
+      const headers = new Headers(networkResponse.headers);
+      headers.delete('content-length');
       const transformed = new Response(html, {
         status: networkResponse.status,
         statusText: networkResponse.statusText,
-        headers: networkResponse.headers
+        headers
       });
       const cache = await caches.open(APP_CACHE);
       cache.put(request, transformed.clone());
