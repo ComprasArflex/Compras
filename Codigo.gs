@@ -1,4 +1,5 @@
 const EMAIL_DESTINO = 'compras@arflex.com.br';
+const API_VERSION = '2026.10.21-historico-rascunhos-v2';
 
 // Deixe vazio para usar a planilha vinculada ao projeto.
 const ID_PLANILHA = '';
@@ -85,7 +86,7 @@ function doPost(e) {
 }
 
 function doGet() {
-  return respostaJson_({ ok: true, mensagem: 'Aplicativo de requisições ativo.' });
+  return respostaJson_({ ok: true, mensagem: 'Aplicativo de requisições ativo.', versao: API_VERSION });
 }
 
 function configurarEstruturaInicial() {
@@ -204,7 +205,8 @@ function processarListagemMinhasSolicitacoes_(data) {
       ok: true,
       token: tokenResposta,
       acao: 'listarMinhasSolicitacoes',
-      solicitacoes: solicitacoes
+      solicitacoes: solicitacoes,
+      versao: API_VERSION
     });
   } catch (erro) {
     return respostaIframe_({

@@ -141,100 +141,457 @@ async function authPayload(action, extra = {}) {
   };
 }
 
+
+const DRAFT_DB = 'requisicao-drafts';
+const DRAFT_STORE = 'rascunhos';
+const SAVED_DRAFT_PREFIX = 'saved:';
+let activeSavedDraftKey = '';
+
 function currentPriority() {
   const text = document.getElementById('priorityResult')?.textContent || '';
   return text.replace(/^Classificação definida:\s*/i, '').trim();
 }
 
-function renderDraftReview() {
-  const container = document.getElementById('draftReview');
-  if (!container) return;
+function openDraftDb() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DRAFT_DB, 1);
+    request.onupgradeneeded = () => {
+      if (!request.result.objectStoreNames.contains(DRAFT_STORE)) {
+        request.result.createObjectStore(DRAFT_STORE, { keyPath: 'key' });
+      }
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
 
+async function getAllDraftRecords() {
+  const db = await openDraftDb();
+  return new Promise((resolve, reject) => {
+    const request = db.transaction(DRAFT_STORE).objectStore(DRAFT_STORE).getAll();
+    request.onsuccess = () => resolve(request.result || []);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function getDraftRecord(key) {
+  const db = await openDraftDb();
+  return new Promise((resolve, reject) => {
+    const request = db.transaction(DRAFT_STORE).objectStore(DRAFT_STORE).get(key);
+    request.onsuccess = () => resolve(request.result || null);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function putDraftRecord(record) {
+  const db = await openDraftDb();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(DRAFT_STORE, 'readwrite');
+    tx.objectStore(DRAFT_STORE).put(record);
+    tx.oncomplete = resolve;
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+async function deleteDraftRecord(key) {
+  const db = await openDraftDb();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(DRAFT_STORE, 'readwrite');
+    tx.objectStore(DRAFT_STORE).delete(key);
+    tx.oncomplete = resolve;
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+function draftIdentity() {
+  const email = normalText(document.getElementById('userEmail')?.textContent).toLowerCase() || 'anonymous';
+  const device = localStorage.getItem('requisicaoDeviceId') || 'device';
+  return { email, device };
+}
+
+function savedDraftPrefix() {
+  const id = draftIdentity();
+  return SAVED_DRAFT_PREFIX + id.email + ':' + id.device + ':';
+}
+
+function currentAutoDraftKey() {
+  const id = draftIdentity();
+  return 'draft:' + id.email + ':' + id.device;
+}
+
+function imagesForStorage(row) {
+  return (Array.isArray(row._images) ? row._images : []).map((image) => ({
+    name: image.name || 'imagem.jpg',
+    mime: image.mime || 'image/jpeg',
+    base64: image.base64 || ''
+  }));
+}
+
+function collectFormSnapshot() {
+  const obra = document.getElementById('obra');
   const rows = Array.from(document.querySelectorAll('#itemsBody .item-row'));
-  const items = rows.map((row, index) => ({
-    row,
-    index,
-    quantity: normalText(row.querySelector('.qty-input')?.value),
-    unit: normalText(row.querySelector('.unit-input')?.value),
-    description: normalText(row.querySelector('.desc-input')?.value),
-    images: Array.isArray(row._images) ? row._images.length : 0
-  })).filter(item => item.quantity || item.unit || item.description || item.images);
+  return {
+    obra: normalText(obra?.value),
+    empresa: normalText(obra?.dataset?.empresa),
+    prioridade: currentPriority(),
+    observacoes: normalText(document.getElementById('observacoes')?.value),
+    itens: rows.map((row) => ({
+      quantidade: normalText(row.querySelector('.qty-input')?.value),
+      unidade: normalText(row.querySelector('.unit-input')?.value),
+      descricao: normalText(row.querySelector('.desc-input')?.value),
+      images: imagesForStorage(row)
+    }))
+  };
+}
 
-  const obra = normalText(document.getElementById('obra')?.value);
-  const priority = currentPriority();
-  const context = [];
-  if (obra) context.push('<span class="draft-chip">Obra: ' + esc(obra) + '</span>');
-  if (priority) context.push('<span class="draft-chip">Prioridade: ' + esc(priority) + '</span>');
+function snapshotHasContent(snapshot) {
+  return Boolean(
+    snapshot.obra ||
+    snapshot.prioridade ||
+    snapshot.observacoes ||
+    (snapshot.itens || []).some((item) => item.quantidade || item.unidade || item.descricao || (item.images || []).length)
+  );
+}
 
-  if (!items.length) {
-    container.innerHTML = `
-      <div class="draft-review-head">
-        <h3 class="draft-review-title">Rascunho atual</h3>
-        <span class="draft-save-state">Salvo automaticamente neste dispositivo</span>
-      </div>
-      ${context.length ? '<div class="draft-context">' + context.join('') + '</div>' : ''}
-      <div class="draft-empty">Os materiais adicionados aparecerão aqui para revisão antes do envio.</div>
-    `;
+function ensureDraftStyle() {
+  if (document.getElementById('savedDraftStyle')) return;
+  const style = document.createElement('style');
+  style.id = 'savedDraftStyle';
+  style.textContent =
+    '.draft-actions{display:flex;gap:8px;flex-wrap:wrap}' +
+    '.draft-status{display:none;margin-bottom:12px;padding:10px 12px;border-radius:10px;background:#ecfdf3;color:#166534;font-size:12px;font-weight:700}' +
+    '.draft-status.visible{display:block}' +
+    '.draft-card-actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;padding:12px 0}' +
+    '.draft-action{padding:8px 12px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--accent);font-weight:700;cursor:pointer}' +
+    '.draft-action.danger{color:#b91c1c;border-color:#f4c7c7}' +
+    '.draft-note{color:var(--muted);font-size:12px;line-height:1.45}' +
+    '@media(max-width:768px){.draft-actions{width:100%}.draft-actions .btn{flex:1}.draft-card-actions{justify-content:stretch}.draft-action{flex:1}}';
+  document.head.appendChild(style);
+}
+
+function setDraftStatus(message) {
+  const status = document.getElementById('draftStatus');
+  if (!status) return;
+  status.textContent = message || '';
+  status.classList.toggle('visible', Boolean(message));
+}
+
+function updateDraftButtons() {
+  const save = document.getElementById('saveDraftButton');
+  if (save) save.textContent = activeSavedDraftKey ? 'Atualizar rascunho' : 'Salvar rascunho';
+}
+
+function formatDraftDate(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
+}
+
+function createPreviewUrl(image) {
+  try {
+    const binary = atob(image.base64 || '');
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+    return URL.createObjectURL(new Blob([bytes], { type: image.mime || 'image/jpeg' }));
+  } catch (_) {
+    return '';
+  }
+}
+
+function renderLoadedPreviews(row) {
+  const box = row.querySelector('.image-previews');
+  if (!box) return;
+  box.innerHTML = '';
+  (row._images || []).forEach((image, index) => {
+    if (!image.previewUrl) image.previewUrl = createPreviewUrl(image);
+    const wrapper = document.createElement('div');
+    wrapper.className = 'image-preview';
+    const img = document.createElement('img');
+    img.alt = 'Prévia';
+    img.src = image.previewUrl || '';
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'image-remove';
+    button.textContent = '×';
+    button.addEventListener('click', () => {
+      if (image.previewUrl) URL.revokeObjectURL(image.previewUrl);
+      row._images.splice(index, 1);
+      renderLoadedPreviews(row);
+    });
+    wrapper.append(img, button);
+    box.appendChild(wrapper);
+  });
+}
+
+function restorePriority(priority) {
+  if (!priority) return;
+  const sequence = {
+    Emergencial: ['sim'],
+    Urgente: ['nao', 'sim'],
+    'Necessária': ['nao', 'nao', 'sim'],
+    Programada: ['nao', 'nao', 'nao']
+  }[priority];
+  (sequence || []).forEach((answer) => {
+    document.querySelector('.priority-option[data-answer="' + answer + '"]')?.click();
+  });
+}
+
+async function storeCurrentAutosave(snapshot) {
+  const identity = draftIdentity();
+  await putDraftRecord({
+    key: currentAutoDraftKey(),
+    updatedAt: new Date().toISOString(),
+    obra: snapshot.obra || '',
+    empresa: snapshot.empresa || '',
+    prioridade: snapshot.prioridade || '',
+    observacoes: snapshot.observacoes || '',
+    itens: snapshot.itens || [],
+    email: identity.email,
+    deviceId: identity.device
+  });
+}
+
+async function applySavedDraft(record) {
+  const clearButton = document.getElementById('clearBtn');
+  clearButton?.click();
+
+  const obra = document.getElementById('obra');
+  const obs = document.getElementById('observacoes');
+  if (obra) {
+    obra.value = record.obra || '';
+    obra.dataset.empresa = record.empresa || '';
+  }
+  if (obs) obs.value = record.observacoes || '';
+
+  const body = document.getElementById('itemsBody');
+  const add = document.getElementById('addItem');
+  if (body && add) {
+    body.innerHTML = '';
+    const items = Array.isArray(record.itens) && record.itens.length ? record.itens : [{}];
+    items.forEach(() => add.click());
+    Array.from(body.querySelectorAll('.item-row')).forEach((row, index) => {
+      const item = items[index] || {};
+      const quantity = row.querySelector('.qty-input');
+      const unit = row.querySelector('.unit-input');
+      const description = row.querySelector('.desc-input');
+      if (quantity) quantity.value = item.quantidade || '';
+      if (unit) unit.value = item.unidade || '';
+      if (description) description.value = item.descricao || '';
+      row._images = (item.images || []).map((image) => ({
+        name: image.name || 'imagem.jpg',
+        mime: image.mime || 'image/jpeg',
+        base64: image.base64 || '',
+        previewUrl: createPreviewUrl(image)
+      }));
+      renderLoadedPreviews(row);
+    });
+  }
+
+  restorePriority(record.prioridade || '');
+  const snapshot = collectFormSnapshot();
+  await storeCurrentAutosave(snapshot).catch(() => {});
+  document.dispatchEvent(new Event('change', { bubbles: true }));
+}
+
+function makeDraftTable(record) {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'history-body';
+
+  const actions = document.createElement('div');
+  actions.className = 'draft-card-actions';
+
+  const edit = document.createElement('button');
+  edit.type = 'button';
+  edit.className = 'draft-action';
+  edit.textContent = 'Editar';
+  edit.dataset.draftEdit = record.key;
+
+  const remove = document.createElement('button');
+  remove.type = 'button';
+  remove.className = 'draft-action danger';
+  remove.textContent = 'Excluir';
+  remove.dataset.draftDelete = record.key;
+
+  actions.append(edit, remove);
+
+  const table = document.createElement('table');
+  table.className = 'history-table';
+  table.innerHTML = '<thead><tr><th>Quantidade</th><th>Unidade</th><th>Descrição</th><th>Observação</th></tr></thead>';
+  const tbody = document.createElement('tbody');
+  (record.itens || []).forEach((item) => {
+    const row = document.createElement('tr');
+    [item.quantidade || '', item.unidade || '', item.descricao || '', record.observacoes || ''].forEach((value) => {
+      const td = document.createElement('td');
+      td.textContent = value;
+      row.appendChild(td);
+    });
+    tbody.appendChild(row);
+  });
+  table.appendChild(tbody);
+  wrapper.append(actions, table);
+  return wrapper;
+}
+
+async function renderSavedDrafts() {
+  const list = document.getElementById('savedDraftsList');
+  if (!list) return;
+  const prefix = savedDraftPrefix();
+  const records = (await getAllDraftRecords().catch(() => []))
+    .filter((record) => String(record.key || '').startsWith(prefix))
+    .sort((a, b) => String(b.updatedAt || '').localeCompare(String(a.updatedAt || '')));
+
+  list.innerHTML = '';
+  if (!records.length) {
+    const empty = document.createElement('div');
+    empty.className = 'history-empty';
+    empty.textContent = 'Nenhum rascunho salvo neste dispositivo.';
+    list.appendChild(empty);
     return;
   }
 
-  const list = items.map(item => {
-    const meta = [
-      item.quantity ? esc(item.quantity) : '',
-      item.unit ? esc(item.unit) : '',
-      item.images ? item.images + (item.images === 1 ? ' imagem' : ' imagens') : ''
-    ].filter(Boolean).join(' · ');
-    return `
-      <div class="draft-item" data-row-index="${item.index}">
-        <div class="draft-item-main">
-          <div class="draft-item-desc">${esc(item.description || 'Descrição ainda não informada')}</div>
-          <div class="draft-item-meta">${meta || 'Item em preenchimento'}</div>
-        </div>
-        <button type="button" class="draft-edit" data-edit-row="${item.index}">Editar</button>
-      </div>
-    `;
-  }).join('');
+  records.forEach((record) => {
+    const details = document.createElement('details');
+    details.className = 'history-card';
 
-  container.innerHTML = `
-    <div class="draft-review-head">
-      <h3 class="draft-review-title">Rascunho atual</h3>
-      <span class="draft-save-state">Salvo automaticamente neste dispositivo</span>
-    </div>
-    ${context.length ? '<div class="draft-context">' + context.join('') + '</div>' : ''}
-    <div class="draft-list">${list}</div>
-  `;
+    const summary = document.createElement('summary');
+    const row = document.createElement('div');
+    row.className = 'history-summary';
+
+    const date = document.createElement('div');
+    date.className = 'history-date';
+    date.textContent = formatDraftDate(record.updatedAt);
+
+    const work = document.createElement('div');
+    work.className = 'history-work';
+    work.textContent = record.obra || 'Obra ainda não informada';
+
+    const priority = document.createElement('div');
+    priority.className = 'history-priority';
+    priority.textContent = record.prioridade || 'Sem prioridade';
+
+    row.append(date, work, priority);
+    summary.appendChild(row);
+    details.append(summary, makeDraftTable(record));
+    list.appendChild(details);
+  });
 }
 
-function installDraftReview() {
-  if (document.getElementById('draftReview')) return;
-  const itemsSection = document.getElementById('itemsBody')?.closest('.section');
-  if (!itemsSection) return;
-  const review = document.createElement('div');
-  review.id = 'draftReview';
-  review.className = 'draft-review';
-  itemsSection.appendChild(review);
-  renderDraftReview();
+async function saveExplicitDraft() {
+  const snapshot = collectFormSnapshot();
+  if (!snapshotHasContent(snapshot)) {
+    alert('Preencha ao menos uma informação antes de salvar o rascunho.');
+    return;
+  }
 
-  review.addEventListener('click', (event) => {
-    const button = event.target.closest('[data-edit-row]');
-    if (!button) return;
-    const index = Number(button.dataset.editRow);
-    const row = document.querySelectorAll('#itemsBody .item-row')[index];
-    if (!row) return;
-    row.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    setTimeout(() => row.querySelector('.desc-input')?.focus(), 350);
+  const identity = draftIdentity();
+  const now = new Date().toISOString();
+  let existing = activeSavedDraftKey ? await getDraftRecord(activeSavedDraftKey).catch(() => null) : null;
+  const key = activeSavedDraftKey || savedDraftPrefix() + crypto.randomUUID();
+
+  await putDraftRecord({
+    key,
+    type: 'saved',
+    email: identity.email,
+    deviceId: identity.device,
+    createdAt: existing?.createdAt || now,
+    updatedAt: now,
+    ...snapshot
   });
 
-  document.addEventListener('input', () => queueMicrotask(renderDraftReview), true);
-  document.addEventListener('change', () => queueMicrotask(renderDraftReview), true);
-  document.addEventListener('click', (event) => {
-    if (event.target.closest('.priority-option,.priority-reset,#addItem,.remove-btn,.image-remove,.image-button')) {
-      setTimeout(renderDraftReview, 80);
-    }
-  }, true);
-  const body = document.getElementById('itemsBody');
-  if (body) new MutationObserver(() => setTimeout(renderDraftReview, 20)).observe(body, { childList: true, subtree: true });
+  activeSavedDraftKey = key;
+  updateDraftButtons();
+  setDraftStatus('Rascunho salvo neste dispositivo.');
+  await renderSavedDrafts();
 }
+
+async function startNewDraft() {
+  const current = collectFormSnapshot();
+  if (snapshotHasContent(current)) {
+    const proceed = confirm('O preenchimento atual será limpo. Os rascunhos já salvos não serão alterados. Deseja continuar?');
+    if (!proceed) return;
+  }
+  document.getElementById('clearBtn')?.click();
+  activeSavedDraftKey = '';
+  updateDraftButtons();
+  await deleteDraftRecord(currentAutoDraftKey()).catch(() => {});
+  setDraftStatus('Novo rascunho iniciado.');
+  document.getElementById('obra')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+async function editExplicitDraft(key) {
+  const record = await getDraftRecord(key).catch(() => null);
+  if (!record) {
+    setDraftStatus('O rascunho não foi encontrado neste dispositivo.');
+    await renderSavedDrafts();
+    return;
+  }
+
+  const current = collectFormSnapshot();
+  if (snapshotHasContent(current) && activeSavedDraftKey !== key) {
+    const proceed = confirm('O preenchimento atual será substituído pelo rascunho selecionado. Rascunhos já salvos continuarão preservados. Deseja continuar?');
+    if (!proceed) return;
+  }
+
+  await applySavedDraft(record);
+  activeSavedDraftKey = key;
+  updateDraftButtons();
+  setDraftStatus('Rascunho carregado para edição.');
+
+  document.querySelector('.request-tab[data-tab="new"]')?.click();
+  document.getElementById('obra')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+async function removeExplicitDraft(key) {
+  const proceed = confirm('Excluir este rascunho deste dispositivo?');
+  if (!proceed) return;
+  await deleteDraftRecord(key);
+  if (activeSavedDraftKey === key) {
+    activeSavedDraftKey = '';
+    updateDraftButtons();
+  }
+  setDraftStatus('Rascunho excluído.');
+  await renderSavedDrafts();
+}
+
+function installSavedDrafts() {
+  if (document.getElementById('savedDraftsSection')) return;
+  ensureDraftStyle();
+
+  const observations = document.getElementById('observacoes')?.closest('.section');
+  if (!observations) return;
+
+  const section = document.createElement('section');
+  section.id = 'savedDraftsSection';
+  section.className = 'section';
+  section.innerHTML =
+    '<div class="section-header">' +
+      '<div><h2>Rascunhos</h2><div class="hint">Salve uma solicitação em preparação para continuar ou revisar depois. Os rascunhos ficam neste dispositivo e só são enviados quando você clicar em Salvar solicitação.</div></div>' +
+      '<div class="draft-actions">' +
+        '<button id="saveDraftButton" class="btn btn-primary" type="button">Salvar rascunho</button>' +
+        '<button id="newDraftButton" class="btn btn-secondary" type="button">Novo rascunho</button>' +
+      '</div>' +
+    '</div>' +
+    '<div id="draftStatus" class="draft-status"></div>' +
+    '<div id="savedDraftsList" class="history-list"></div>';
+
+  observations.insertAdjacentElement('afterend', section);
+  document.getElementById('saveDraftButton')?.addEventListener('click', saveExplicitDraft);
+  document.getElementById('newDraftButton')?.addEventListener('click', startNewDraft);
+
+  section.addEventListener('click', (event) => {
+    const edit = event.target.closest('[data-draft-edit]');
+    if (edit) {
+      editExplicitDraft(edit.dataset.draftEdit);
+      return;
+    }
+    const remove = event.target.closest('[data-draft-delete]');
+    if (remove) removeExplicitDraft(remove.dataset.draftDelete);
+  });
+
+  updateDraftButtons();
+  renderSavedDrafts();
+}
+
 
 function priorityClass(priority) {
   return 'history-priority';
@@ -290,7 +647,11 @@ async function loadHistory(force = false) {
     renderHistory(response.solicitacoes || []);
     historyLoaded = true;
   } catch (error) {
-    if (list) list.innerHTML = '<div class="history-error">' + esc(error.message) + '</div>';
+    let message = error.message || 'Não foi possível carregar suas solicitações.';
+    if (/Ação não reconhecida|autenticação obrigatória/i.test(message)) {
+      message = 'A implantação do Apps Script ainda está na versão anterior. Atualize o Código.gs e crie uma nova versão da implantação para habilitar Minhas solicitações.';
+    }
+    if (list) list.innerHTML = '<div class="history-error">' + esc(message) + '</div>';
   } finally {
     historyLoading = false;
     if (refresh) refresh.disabled = false;
@@ -346,10 +707,15 @@ function createTabs() {
 function watchSuccessfulSubmission() {
   const box = document.getElementById('progressBox');
   if (!box) return;
-  new MutationObserver(() => {
+  new MutationObserver(async () => {
     if (/enviada com sucesso/i.test(box.textContent || '')) {
       historyLoaded = false;
-      setTimeout(renderDraftReview, 100);
+      if (activeSavedDraftKey) {
+        await deleteDraftRecord(activeSavedDraftKey).catch(() => {});
+        activeSavedDraftKey = '';
+        updateDraftButtons();
+        await renderSavedDrafts();
+      }
     }
   }).observe(box, { childList: true, subtree: true, characterData: true });
 }
@@ -362,14 +728,14 @@ function start() {
   ensureStyle();
   createTransport();
   createTabs();
-  installDraftReview();
+  installSavedDrafts();
   watchSuccessfulSubmission();
 
   new MutationObserver(() => {
     if (!appView.hidden) {
       createTabs();
-      installDraftReview();
-      renderDraftReview();
+      installSavedDrafts();
+      renderSavedDrafts();
     }
   }).observe(appView, { attributes: true, attributeFilter: ['hidden'] });
 }
