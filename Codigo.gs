@@ -1,5 +1,5 @@
 const EMAIL_DESTINO = 'compras@arflex.com.br';
-const API_VERSION = '2026.10.21-historico-rascunhos-v2';
+const API_VERSION = '2026.10.21-historico-retencao-v3';
 
 // Deixe vazio para usar a planilha vinculada ao projeto.
 const ID_PLANILHA = '';
@@ -15,12 +15,14 @@ const NOME_ABA_USUARIOS = 'USUARIOS_AUTORIZADOS';
 const NOME_ABA_SESSOES = 'USUARIOS_SESSOES';
 const NOME_ABA_ARQUIVOS = 'ARQUIVOS_REQUISICOES';
 const NOME_ABA_IMAGENS = 'IMAGENS';
+const NOME_ABA_SOLICITACOES_OCULTAS = 'SOLICITACOES_OCULTAS';
 
 const MAX_IMAGENS_POR_ITEM = 3;
 const MAX_BYTES_IMAGEM = 750000;
 const DIAS_ARQUIVAR = 90;
 const DIAS_GRACA_EXCLUSAO = 30;
 const HORAS_LIMPAR_PENDENTE = 24;
+const DIAS_VISUALIZACAO_PRIORIDADE = { Emergencial: 5, Urgente: 6, 'Necessária': 10, Programada: 35 };
 
 const CABECALHOS = [
   'ID da requisição', 'Data', 'Hora', 'Empresa', 'Obra', 'Usuário autenticado',
@@ -41,6 +43,7 @@ const CABECALHOS_IMAGENS = [
   'ID da requisição', 'Item', 'Arquivo ID', 'Nome do arquivo', 'Link',
   'E-mail', 'Criada em', 'Tamanho', 'MIME'
 ];
+const CABECALHOS_SOLICITACOES_OCULTAS = ['ID da requisição', 'E-mail', 'Ocultada em', 'Motivo'];
 
 const PROPRIEDADES = {
   FIREBASE_PROJECT_ID: 'FIREBASE_PROJECT_ID',
@@ -63,6 +66,7 @@ function doPost(e) {
     if (acao === 'encerrarSessao') return processarEncerramentoSessao_(recebido);
     if (acao === 'carregarBases') return processarCarregamentoBasesAutenticado_(recebido);
     if (acao === 'listarMinhasSolicitacoes') return processarListagemMinhasSolicitacoes_(recebido);
+    if (acao === 'ocultarMinhaSolicitacao') return processarOcultacaoMinhaSolicitacao_(recebido);
     if (acao === 'reservarRequisicao') return processarReservaRequisicao_(recebido);
     if (acao === 'enviarImagem') return processarEnvioImagem_(recebido);
     if (acao === 'finalizarRequisicao') return processarFinalizacaoRequisicao_(recebido);
@@ -95,6 +99,7 @@ function configurarEstruturaInicial() {
   garantirAbaComCabecalhos_(planilha, NOME_ABA_SESSOES, CABECALHOS_SESSOES);
   garantirAbaComCabecalhos_(planilha, NOME_ABA_ARQUIVOS, CABECALHOS_ARQUIVOS);
   garantirAbaComCabecalhos_(planilha, NOME_ABA_IMAGENS, CABECALHOS_IMAGENS);
+  garantirAbaComCabecalhos_(planilha, NOME_ABA_SOLICITACOES_OCULTAS, CABECALHOS_SOLICITACOES_OCULTAS);
 
   const props = PropertiesService.getScriptProperties();
   let rootId = props.getProperty(PROPRIEDADES.DRIVE_ROOT_FOLDER_ID);
@@ -218,6 +223,34 @@ function processarListagemMinhasSolicitacoes_(data) {
   }
 }
 
+function processarOcultacaoMinhaSolicitacao_(data) {
+  const tokenResposta = texto_(data.tokenResposta);
+  try {
+    const contexto = validarContextoAutenticado_(data);
+    const idRequisicao = texto_(data.idRequisicao);
+    if (!idRequisicao) throw new Error('Solicitação não informada.');
+
+    if (!solicitacaoPertenceAoUsuario_(idRequisicao, contexto.usuario.email)) {
+      throw new Error('Esta solicitação não pertence ao usuário autenticado.');
+    }
+
+    registrarSolicitacaoOculta_(idRequisicao, contexto.usuario.email, 'MANUAL');
+    return respostaIframe_({
+      ok: true,
+      token: tokenResposta,
+      acao: 'ocultarMinhaSolicitacao',
+      idRequisicao: idRequisicao
+    });
+  } catch (erro) {
+    return respostaIframe_({
+      ok: false,
+      token: tokenResposta,
+      acao: 'ocultarMinhaSolicitacao',
+      erro: erro.message
+    });
+  }
+}
+
 function listarSolicitacoesDoUsuario_(email, limite) {
   const sheet = obterAbaDestino_();
   if (!sheet || sheet.getLastRow() < 2) return [];
@@ -225,6 +258,7 @@ function listarSolicitacoesDoUsuario_(email, limite) {
   const colunas = CABECALHOS.length;
   const linhas = sheet.getRange(2, 1, sheet.getLastRow() - 1, colunas).getDisplayValues();
   const emailAlvo = texto_(email).toLowerCase();
+  const ocultas = obterSolicitacoesOcultasDoUsuario_(emailAlvo);
   const grupos = {};
 
   const idx = {
@@ -245,7 +279,7 @@ function listarSolicitacoesDoUsuario_(email, limite) {
     if (texto_(linha[idx.email]).toLowerCase() !== emailAlvo) return;
 
     const id = texto_(linha[idx.id]);
-    if (!id) return;
+    if (!id || ocultas[id]) return;
 
     if (!grupos[id]) {
       grupos[id] = {
@@ -254,7 +288,7 @@ function listarSolicitacoesDoUsuario_(email, limite) {
         hora: texto_(linha[idx.hora]),
         empresa: texto_(linha[idx.empresa]),
         obra: texto_(linha[idx.obra]),
-        prioridade: texto_(linha[idx.prioridade]),
+        prioridade: normalizarPrioridade_(linha[idx.prioridade]),
         itens: [],
         _ordem: index
       };
@@ -269,15 +303,105 @@ function listarSolicitacoesDoUsuario_(email, limite) {
     });
   });
 
+  const hoje = inicioDoDia_(new Date());
   return Object.keys(grupos)
-    .map(function(id) { return grupos[id]; })
+    .map(function(id) {
+      const item = grupos[id];
+      const limite = calcularDataLimiteVisualizacao_(item.data, item.prioridade);
+      item.expiraEm = limite ? Utilities.formatDate(limite, Session.getScriptTimeZone() || 'America/Sao_Paulo', 'dd/MM/yyyy') : '';
+      item.expiraEmData = limite;
+      return item;
+    })
+    .filter(function(item) {
+      return !item.expiraEmData || hoje <= item.expiraEmData;
+    })
     .sort(function(a, b) { return b._ordem - a._ordem; })
     .slice(0, limite)
     .map(function(item) {
       delete item._ordem;
+      delete item.expiraEmData;
       return item;
     });
 }
+
+function solicitacaoPertenceAoUsuario_(idRequisicao, email) {
+  const sheet = obterAbaDestino_();
+  if (!sheet || sheet.getLastRow() < 2) return false;
+  const idIndex = CABECALHOS.indexOf('ID da requisição') + 1;
+  const emailIndex = CABECALHOS.indexOf('E-mail do usuário') + 1;
+  const linhas = sheet.getRange(2, 1, sheet.getLastRow() - 1, CABECALHOS.length).getDisplayValues();
+  const alvoId = texto_(idRequisicao);
+  const alvoEmail = texto_(email).toLowerCase();
+  return linhas.some(function(linha) {
+    return texto_(linha[idIndex - 1]) === alvoId && texto_(linha[emailIndex - 1]).toLowerCase() === alvoEmail;
+  });
+}
+
+function registrarSolicitacaoOculta_(idRequisicao, email, motivo) {
+  const aba = garantirAbaComCabecalhos_(obterPlanilha_(), NOME_ABA_SOLICITACOES_OCULTAS, CABECALHOS_SOLICITACOES_OCULTAS);
+  const alvoId = texto_(idRequisicao);
+  const alvoEmail = texto_(email).toLowerCase();
+
+  if (aba.getLastRow() >= 2) {
+    const linhas = aba.getRange(2, 1, aba.getLastRow() - 1, CABECALHOS_SOLICITACOES_OCULTAS.length).getDisplayValues();
+    const existente = linhas.some(function(linha) {
+      return texto_(linha[0]) === alvoId && texto_(linha[1]).toLowerCase() === alvoEmail;
+    });
+    if (existente) return;
+  }
+
+  aba.appendRow([alvoId, alvoEmail, new Date(), texto_(motivo) || 'MANUAL']);
+}
+
+function obterSolicitacoesOcultasDoUsuario_(email) {
+  const aba = obterPlanilha_().getSheetByName(NOME_ABA_SOLICITACOES_OCULTAS);
+  const mapa = {};
+  if (!aba || aba.getLastRow() < 2) return mapa;
+
+  const alvoEmail = texto_(email).toLowerCase();
+  const linhas = aba.getRange(2, 1, aba.getLastRow() - 1, CABECALHOS_SOLICITACOES_OCULTAS.length).getDisplayValues();
+  linhas.forEach(function(linha) {
+    if (texto_(linha[1]).toLowerCase() !== alvoEmail) return;
+    const id = texto_(linha[0]);
+    if (id) mapa[id] = true;
+  });
+  return mapa;
+}
+
+function calcularDataLimiteVisualizacao_(dataTexto, prioridade) {
+  const base = parseDataSolicitacao_(dataTexto);
+  if (!base) return null;
+  const prioridadeNormalizada = normalizarPrioridade_(prioridade);
+  const dias = DIAS_VISUALIZACAO_PRIORIDADE[prioridadeNormalizada];
+  if (!dias) return null;
+  return adicionarDiasUteis_(base, dias);
+}
+
+function parseDataSolicitacao_(valor) {
+  const texto = texto_(valor);
+  const br = texto.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (br) return inicioDoDia_(new Date(Number(br[3]), Number(br[2]) - 1, Number(br[1])));
+  const iso = new Date(texto);
+  return isNaN(iso.getTime()) ? null : inicioDoDia_(iso);
+}
+
+function inicioDoDia_(data) {
+  const d = new Date(data);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+function adicionarDiasUteis_(dataInicial, dias) {
+  const data = inicioDoDia_(dataInicial);
+  let restantes = Number(dias) || 0;
+  while (restantes > 0) {
+    data.setDate(data.getDate() + 1);
+    const dia = data.getDay();
+    if (dia !== 0 && dia !== 6) restantes -= 1;
+  }
+  return data;
+}
+
 
 function processarReservaRequisicao_(data) {
   const tokenResposta = texto_(data.tokenResposta);
@@ -912,7 +1036,7 @@ function obterAbaDestino_() {
     if (!aba) throw new Error('A aba de destino não foi encontrada.');
     return aba;
   }
-  const ignorar = [NOME_ABA_BASE_OBRAS, NOME_ABA_BASE_MATERIAIS, NOME_ABA_USUARIOS, NOME_ABA_SESSOES, NOME_ABA_ARQUIVOS, NOME_ABA_IMAGENS];
+  const ignorar = [NOME_ABA_BASE_OBRAS, NOME_ABA_BASE_MATERIAIS, NOME_ABA_USUARIOS, NOME_ABA_SESSOES, NOME_ABA_ARQUIVOS, NOME_ABA_IMAGENS, NOME_ABA_SOLICITACOES_OCULTAS];
   const porCabecalho = planilha.getSheets().find(function(sheet) {
     if (ignorar.indexOf(sheet.getName()) !== -1 || sheet.getLastColumn() < 3) return false;
     const h = sheet.getRange(1, 1, 1, Math.min(sheet.getLastColumn(), CABECALHOS.length)).getDisplayValues()[0].map(texto_);
