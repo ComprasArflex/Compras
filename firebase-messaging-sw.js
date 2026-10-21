@@ -1,10 +1,11 @@
-const APP_CACHE = 'compras-app-v4';
+const APP_CACHE = 'compras-app-v5';
 const APP_SHELL = [
   './',
   './requisicao-v2.html',
   './notificacoes.html',
   './foreground-notifications.js',
   './mobile-form-fixes.js',
+  './request-workspace.js',
   './135927287_448584936583178_5622652680214904709_n.jpg'
 ];
 
@@ -31,6 +32,9 @@ function injectPageModules(html) {
   }
   if (!html.includes('mobile-form-fixes.js')) {
     scripts.push('<script type="module" src="./mobile-form-fixes.js"></script>');
+  }
+  if (!html.includes('request-workspace.js')) {
+    scripts.push('<script type="module" src="./request-workspace.js"></script>');
   }
   if (!scripts.length) return html;
   return html.replace('</body>', `${scripts.join('')}</body>`);
