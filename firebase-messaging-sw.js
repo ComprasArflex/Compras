@@ -1,4 +1,4 @@
-const APP_CACHE = 'compras-app-v5';
+const APP_CACHE = 'compras-app-v6';
 const APP_SHELL = [
   './',
   './requisicao-v2.html',
