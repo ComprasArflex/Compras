@@ -55,6 +55,10 @@ function ensureStyle() {
     .history-work{font-weight:700;overflow-wrap:anywhere}
     .history-priority{padding:5px 9px;border-radius:999px;background:#edf2ef;color:#34423a;font-size:12px;font-weight:700;white-space:nowrap}
     .history-body{padding:0 14px 14px;overflow-x:auto}
+    .history-controls{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 0 4px}
+    .history-expiry{color:var(--muted);font-size:12px}
+    .history-delete{padding:8px 12px;border:1px solid #f4c7c7;border-radius:9px;background:#fff5f5;color:#b91c1c;font-weight:700;cursor:pointer}
+    .history-delete:disabled{opacity:.6;cursor:wait}
     .history-table{width:100%;min-width:620px;border-collapse:collapse;table-layout:auto}
     .history-table th,.history-table td{padding:10px;border-bottom:1px solid #e8eeea;text-align:left;vertical-align:top;background:#fff}
     .history-table th{font-size:12px;color:#355043;background:#f9fbfa}
@@ -600,39 +604,85 @@ function priorityClass(priority) {
 function renderHistory(records) {
   const list = document.getElementById('historyList');
   if (!list) return;
+  list.innerHTML = '';
   if (!Array.isArray(records) || !records.length) {
-    list.innerHTML = '<div class="history-empty">Nenhuma solicitação enviada por esta conta foi encontrada.</div>';
+    const empty = document.createElement('div');
+    empty.className = 'history-empty';
+    empty.textContent = 'Nenhuma solicitação disponível para visualização.';
+    list.appendChild(empty);
     return;
   }
+  records.forEach((record) => {
+    const details = document.createElement('details');
+    details.className = 'history-card';
+    details.dataset.requestId = record.idRequisicao || '';
+    const summary = document.createElement('summary');
+    const summaryRow = document.createElement('div');
+    summaryRow.className = 'history-summary';
+    const date = document.createElement('div');
+    date.className = 'history-date';
+    date.textContent = record.data || '';
+    const work = document.createElement('div');
+    work.className = 'history-work';
+    work.textContent = record.obra || '';
+    const priority = document.createElement('div');
+    priority.className = priorityClass(record.prioridade);
+    priority.textContent = record.prioridade || '';
+    summaryRow.append(date, work, priority);
+    summary.appendChild(summaryRow);
+    details.appendChild(summary);
+    const body = document.createElement('div');
+    body.className = 'history-body';
+    const controls = document.createElement('div');
+    controls.className = 'history-controls';
+    const expiry = document.createElement('span');
+    expiry.className = 'history-expiry';
+    expiry.textContent = record.expiraEm ? 'Disponível até ' + record.expiraEm : '';
+    const remove = document.createElement('button');
+    remove.type = 'button';
+    remove.className = 'history-delete';
+    remove.dataset.hideRequest = record.idRequisicao || '';
+    remove.textContent = 'Excluir';
+    controls.append(expiry, remove);
+    body.appendChild(controls);
+    const table = document.createElement('table');
+    table.className = 'history-table';
+    table.innerHTML = '<thead><tr><th>Quantidade</th><th>Unidade</th><th>Descrição</th><th>Observação</th></tr></thead>';
+    const tbody = document.createElement('tbody');
+    (Array.isArray(record.itens) ? record.itens : []).forEach((item) => {
+      const row = document.createElement('tr');
+      [item.quantidade || '', item.unidade || '', item.descricao || '', item.observacao || ''].forEach((value) => {
+        const td = document.createElement('td');
+        td.textContent = value;
+        row.appendChild(td);
+      });
+      tbody.appendChild(row);
+    });
+    table.appendChild(tbody);
+    body.appendChild(table);
+    details.appendChild(body);
+    list.appendChild(details);
+  });
+}
 
-  list.innerHTML = records.map(record => {
-    const items = Array.isArray(record.itens) ? record.itens : [];
-    const rows = items.map(item => `
-      <tr>
-        <td>${esc(item.quantidade)}</td>
-        <td>${esc(item.unidade)}</td>
-        <td>${esc(item.descricao)}</td>
-        <td>${esc(item.observacao || '')}</td>
-      </tr>
-    `).join('');
-    return `
-      <details class="history-card">
-        <summary>
-          <div class="history-summary">
-            <div class="history-date">${esc(record.data || '')}</div>
-            <div class="history-work">${esc(record.obra || '')}</div>
-            <div class="${priorityClass(record.prioridade)}">${esc(record.prioridade || '')}</div>
-          </div>
-        </summary>
-        <div class="history-body">
-          <table class="history-table">
-            <thead><tr><th>Quantidade</th><th>Unidade</th><th>Descrição</th><th>Observação</th></tr></thead>
-            <tbody>${rows}</tbody>
-          </table>
-        </div>
-      </details>
-    `;
-  }).join('');
+async function hideHistoryRequest(requestId, button) {
+  const id = normalText(requestId);
+  if (!id) return;
+  const confirmed = confirm(
+    'Excluir esta solicitação de "Minhas solicitações"?\n\n' +
+    'Ela deixará de aparecer para você, mas o registro continuará preservado na planilha.'
+  );
+  if (!confirmed) return;
+  const original = button?.textContent || 'Excluir';
+  if (button) { button.disabled = true; button.textContent = 'Excluindo...'; }
+  try {
+    await post(await authPayload('ocultarMinhaSolicitacao', { idRequisicao: id }));
+    historyLoaded = false;
+    await loadHistory(true);
+  } catch (error) {
+    alert(error.message || 'Não foi possível excluir a solicitação da visualização.');
+    if (button) { button.disabled = false; button.textContent = original; }
+  }
 }
 
 async function loadHistory(force = false) {
@@ -702,6 +752,13 @@ function createTabs() {
   });
 
   history.querySelector('#historyRefresh')?.addEventListener('click', () => loadHistory(true));
+  history.addEventListener('click', (event) => {
+    const button = event.target.closest('[data-hide-request]');
+    if (!button) return;
+    event.preventDefault();
+    event.stopPropagation();
+    hideHistoryRequest(button.dataset.hideRequest, button);
+  });
 }
 
 function watchSuccessfulSubmission() {
